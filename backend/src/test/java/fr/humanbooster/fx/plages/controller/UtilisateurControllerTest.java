@@ -58,7 +58,7 @@ class UtilisateurControllerTest {
 		mockMvc.perform(MockMvcRequestBuilders.post("/login")
 			.accept(MediaType.TEXT_HTML)
 			.param("username", "peppe@humanbooster.fr")
-			.param("password", "abcd"))
+			.param("password", "invalid_password_123"))
 			.andExpect(MockMvcResultMatchers.redirectedUrl("index?notification=Email%20ou%20mot%20passe%20incorrect"))
 			.andExpect(status().isFound());
 	}

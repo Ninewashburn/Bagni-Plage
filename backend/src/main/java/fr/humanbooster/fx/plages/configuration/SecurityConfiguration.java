@@ -40,14 +40,4 @@ public class SecurityConfiguration {
 		
 		return http.build();
 	}
-
-	/*
-	@Bean
-	InMemoryUserDetailsManager initUtilisateurs() {
-		UserDetails toto = User.builder().username("toto").password(passwordEncoder.encode("toto")).roles("ADMIN")
-				.build();
-		UserDetails titi = User.builder().username("titi").password(passwordEncoder.encode("titi")).roles("USER").build();
-		return new InMemoryUserDetailsManager(toto, titi);
-	}
-	*/
 }
