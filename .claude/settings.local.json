@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(xargs basename *)",
+      "Bash(npm install *)",
+      "Bash(npx ng *)"
+    ]
+  }
+}

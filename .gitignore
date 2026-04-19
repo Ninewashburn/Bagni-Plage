@@ -40,5 +40,5 @@ package-lock.json
 pnpm-lock.yaml
 
 # Business case files to exclude
-businesscase.pdf
+BusinessCaseCDA2022.pdf
 CLAUDE.md
