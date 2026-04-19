@@ -3,7 +3,13 @@
     "allow": [
       "Bash(xargs basename *)",
       "Bash(npm install *)",
-      "Bash(npx ng *)"
+      "Bash(npx ng *)",
+      "Bash(node -e \"const p=require\\('./node_modules/@angular/core/package.json'\\); console.log\\(p.version\\)\")",
+      "Bash(npx eslint *)",
+      "Bash(npx prettier *)",
+      "Bash(rm -f 'c:/Users/Nitro5/Dev/Java Spring/Bagni-Plage/backend/.gitignore' 'c:/Users/Nitro5/Dev/Java Spring/Bagni-Plage/frontend/.gitignore')",
+      "Bash(rm -rf \"c:/Users/Nitro5/Dev/Java Spring/Bagni-Plage/frontend/.idea\")",
+      "Bash(rmdir \"c:/Users/Nitro5/Dev/Java Spring/Bagni-Plage/frontend/src/assets/sounds\")"
     ]
   }
 }

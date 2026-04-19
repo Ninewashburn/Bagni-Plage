@@ -23,6 +23,7 @@ frontend/.nyc_output/
 .vscode/
 .idea/
 *.iml
+.claude/
 
 # OS
 .DS_Store
