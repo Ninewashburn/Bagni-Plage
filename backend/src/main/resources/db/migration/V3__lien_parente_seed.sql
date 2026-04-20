@@ -1,0 +1,5 @@
+-- Types de liens de parenté (documentation — les données réelles sont saisies par le concessionnaire)
+-- FRERE_SOEUR  → -50%
+-- COUSIN       → -25%
+-- Ces valeurs sont configurées via l'API pour chaque client concerné.
+-- Ce fichier ne contient que des données de référence commentées.
