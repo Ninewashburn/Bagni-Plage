@@ -23,7 +23,13 @@
       "Bash(powershell.exe -Command \"java -version\")",
       "Bash(powershell.exe -Command \"Get-Command java\")",
       "Bash(powershell.exe -Command 'Get-ChildItem '\\\\''C:\\\\Program Files\\\\Java'\\\\'', '\\\\''C:\\\\Program Files\\\\Eclipse Adoptium'\\\\'', '\\\\''C:\\\\Program Files\\\\Microsoft'\\\\'', '\\\\''C:\\\\Users\\\\Nitro5\\\\AppData\\\\Local\\\\Programs'\\\\'' -ErrorAction SilentlyContinue | Where-Object { $_.Name -match '\\\\''jdk|java'\\\\'' } | Select-Object FullName')",
-      "Bash(powershell.exe -Command \"Get-ChildItem HKLM:\\\\SOFTWARE\\\\JavaSoft -ErrorAction SilentlyContinue | Format-List\")"
+      "Bash(powershell.exe -Command \"Get-ChildItem HKLM:\\\\SOFTWARE\\\\JavaSoft -ErrorAction SilentlyContinue | Format-List\")",
+      "Bash(docker info *)",
+      "Bash(docker compose *)",
+      "Bash(docker exec *)",
+      "Bash(npx vitest *)",
+      "Bash(npm ls *)",
+      "Bash(npm audit *)"
     ]
   }
 }

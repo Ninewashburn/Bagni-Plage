@@ -37,15 +37,15 @@ CREATE TABLE lien_parente (
 -- File de parasols (numérotée 1-8, 1 = bord mer)
 CREATE TABLE file_plage (
     id              BIGSERIAL      PRIMARY KEY,
-    numero          SMALLINT       NOT NULL UNIQUE CHECK (numero BETWEEN 1 AND 8),
+    numero          INTEGER        NOT NULL UNIQUE CHECK (numero BETWEEN 1 AND 8),
     prix_journalier NUMERIC(10, 2) NOT NULL
 );
 
 -- Parasols (1-36 par file)
 CREATE TABLE parasol (
-    id                BIGSERIAL PRIMARY KEY,
-    numero_emplacement SMALLINT  NOT NULL CHECK (numero_emplacement BETWEEN 1 AND 36),
-    file_id           BIGINT     NOT NULL REFERENCES file_plage(id) ON DELETE CASCADE,
+    id                 BIGSERIAL PRIMARY KEY,
+    numero_emplacement INTEGER   NOT NULL CHECK (numero_emplacement BETWEEN 1 AND 36),
+    file_id            BIGINT    NOT NULL REFERENCES file_plage(id) ON DELETE CASCADE,
     UNIQUE (numero_emplacement, file_id)
 );
 

@@ -25,7 +25,7 @@ CROSS JOIN file_plage f;
 -- mot de passe : Admin1234! (bcrypt)
 INSERT INTO utilisateur (nom, prenom, email, mot_de_passe, role)
 VALUES ('Rossi', 'Marco', 'admin@bagni-plage.it',
-        '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LPVsk0/bVFy',
+        '$2a$10$E0THmlxMjfj8.CDzkonyu.vsRshwRqdadFUqUrbPb4x0ZnmPt122C',
         'ROLE_CONCESSIONNAIRE');
 
 INSERT INTO concessionnaire (utilisateur_id)

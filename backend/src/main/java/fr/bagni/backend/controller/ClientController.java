@@ -36,6 +36,12 @@ public class ClientController {
         return clientService.findById(id);
     }
 
+    @GetMapping("/me")
+    @PreAuthorize("hasRole('CLIENT')")
+    public ClientResponse getMe(@AuthenticationPrincipal UserDetails userDetails) {
+        return clientService.toResponse(clientService.findByEmailOrThrow(userDetails.getUsername()));
+    }
+
     @PatchMapping("/me")
     @PreAuthorize("hasRole('CLIENT')")
     public ClientResponse updateMe(@Valid @RequestBody ClientUpdateRequest request,
