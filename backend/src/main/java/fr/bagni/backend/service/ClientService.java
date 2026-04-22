@@ -8,6 +8,7 @@ import fr.bagni.backend.exception.BusinessException;
 import fr.bagni.backend.exception.ResourceNotFoundException;
 import fr.bagni.backend.repository.ClientRepository;
 import fr.bagni.backend.repository.PaysRepository;
+import fr.bagni.backend.repository.UtilisateurRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -21,6 +22,7 @@ public class ClientService {
 
     private final ClientRepository clientRepository;
     private final PaysRepository paysRepository;
+    private final UtilisateurRepository utilisateurRepository;
 
     public Page<ClientResponse> findAll(Long paysId, Pageable pageable) {
         Page<Client> clients = paysId != null
@@ -41,6 +43,12 @@ public class ClientService {
     @Transactional
     public ClientResponse update(Long id, ClientUpdateRequest request) {
         var client = getClientOrThrow(id);
+
+        if (!request.email().equalsIgnoreCase(client.getEmail())
+                && utilisateurRepository.existsByEmail(request.email())) {
+            throw new BusinessException("Cet email est déjà utilisé par un autre compte");
+        }
+
         var pays = paysRepository.findById(request.paysId())
                 .orElseThrow(() -> new ResourceNotFoundException("Pays introuvable"));
 

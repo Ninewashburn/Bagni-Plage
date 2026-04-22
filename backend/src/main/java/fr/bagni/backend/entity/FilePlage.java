@@ -27,5 +27,6 @@ public class FilePlage {
 
     @OneToMany(mappedBy = "file", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("numeroEmplacement ASC")
+    @Builder.Default
     private List<Parasol> parasols = new ArrayList<>();
 }

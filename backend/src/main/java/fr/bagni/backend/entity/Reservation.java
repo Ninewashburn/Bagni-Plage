@@ -32,6 +32,7 @@ public class Reservation {
         joinColumns = @JoinColumn(name = "reservation_id"),
         inverseJoinColumns = @JoinColumn(name = "parasol_id")
     )
+    @Builder.Default
     private List<Parasol> parasols = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)
