@@ -1,0 +1,79 @@
+<div class="page-container">
+  <div class="profil-wrap">
+    <!-- Avatar header -->
+    <div class="profil-hero card-cabana">
+      <app-avatar [initials]="initials()" color="#C8553D" [size]="64" />
+      <div class="profil-hero-info">
+        <div class="profil-hero-name">{{ auth.prenom() }} {{ auth.nom() }}</div>
+        <div class="profil-hero-email">{{ auth.email() }}</div>
+        <div class="profil-hero-role">
+          @if (auth.isConcessionnaire()) { Concessionnaire } @else { Client }
+        </div>
+      </div>
+    </div>
+
+    @if (auth.isConcessionnaire()) {
+    <div class="profil-card card">
+      <div class="profil-section-title">Informations du compte</div>
+      <div class="profil-info-rows">
+        <div class="profil-info-row">
+          <span class="profil-info-label">Prénom</span>
+          <span class="profil-info-value">{{ auth.prenom() }}</span>
+        </div>
+        <div class="profil-info-row">
+          <span class="profil-info-label">Nom</span>
+          <span class="profil-info-value">{{ auth.nom() }}</span>
+        </div>
+        <div class="profil-info-row">
+          <span class="profil-info-label">Email</span>
+          <span class="profil-info-value">{{ auth.email() }}</span>
+        </div>
+        <div class="profil-info-row">
+          <span class="profil-info-label">Rôle</span>
+          <span class="profil-info-value">Concessionnaire</span>
+        </div>
+      </div>
+    </div>
+    } @else {
+    <div class="profil-card card">
+      <div class="profil-section-title">Modifier mes informations</div>
+      <form [formGroup]="form" (ngSubmit)="save()" class="profil-form">
+        <div class="profil-form-row">
+          <mat-form-field appearance="outline">
+            <mat-label>Prénom</mat-label>
+            <input matInput formControlName="prenom" autocomplete="given-name" />
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Nom</mat-label>
+            <input matInput formControlName="nom" autocomplete="family-name" />
+          </mat-form-field>
+        </div>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Email</mat-label>
+          <input matInput formControlName="email" type="email" autocomplete="email" />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Pays</mat-label>
+          <mat-select formControlName="paysId">
+            @for (p of pays(); track p.id) {
+            <mat-option [value]="p.id">{{ p.nom }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        @if (saved()) {
+        <p class="profil-saved">Modifications enregistrées.</p>
+        }
+
+        <button class="btn btn--primary" type="submit" [disabled]="form.invalid || loading()">
+          @if (loading()) {
+          <mat-spinner diameter="18" />
+          } @else { Enregistrer les modifications }
+        </button>
+      </form>
+    </div>
+    }
+  </div>
+</div>

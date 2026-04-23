@@ -1,0 +1,178 @@
+<div class="page-container">
+  <!-- Header -->
+  <div class="page-header">
+    <div>
+      <h1 class="section-title">Réservations</h1>
+      @if (!auth.isConcessionnaire()) {
+      <p class="section-sub">Gérez vos séjours à Bagni Plage</p>
+      }
+    </div>
+    @if (!auth.isConcessionnaire()) {
+    <a routerLink="/reservations/nouvelle" class="btn btn--primary">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="margin-right: 6px">
+        <path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+      </svg>
+      Nouvelle réservation
+    </a>
+    }
+  </div>
+
+  <!-- Filter pills (concessionnaire) -->
+  @if (auth.isConcessionnaire()) {
+  <div class="filter-pills">
+    @for (tab of tabs; track tab.value) {
+    <button
+      class="pill"
+      [class.pill--active]="activeTab === tab.value"
+      (click)="onTabChange(tab.value)"
+      type="button"
+    >
+      {{ tab.label }} @if (tab.value === 1 && pendingCount() > 0) {
+      <span class="pill-badge">{{ pendingCount() }}</span>
+      }
+    </button>
+    }
+  </div>
+  } @if (loading()) {
+  <mat-progress-bar mode="indeterminate" color="accent" />
+  }
+
+  <!-- Concessionnaire table view -->
+  @if (auth.isConcessionnaire()) {
+  <div class="res-table-wrapper">
+    @if (!reservations().length && !loading()) {
+    <div class="empty-state">
+      <p>Aucune réservation</p>
+    </div>
+    } @else {
+    <table class="res-table">
+      <thead>
+        <tr>
+          <th>Client</th>
+          <th>Parasols</th>
+          <th>Période</th>
+          <th>Équipement</th>
+          <th>Montant</th>
+          <th>Statut</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (r of reservations(); track r.id) {
+        <tr class="res-row">
+          <td>
+            <div class="res-client-cell">
+              <app-avatar [initials]="clientInitials(r)" [color]="clientColor(r)" [size]="32" />
+              <div>
+                <div class="res-client-name">{{ r.client.prenom }} {{ r.client.nom }}</div>
+                <div class="res-client-country">{{ r.client.pays.nom }}</div>
+              </div>
+            </div>
+          </td>
+          <td class="res-parasols">{{ formatParasols(r.parasols) }}</td>
+          <td class="res-dates">
+            {{ r.dateDebut | date:'d MMM':'':'fr' }} → {{ r.dateFin | date:'d MMM yy':'':'fr' }}
+          </td>
+          <td class="res-equip">{{ equipementLabel(r.equipement) }}</td>
+          <td class="res-amount">{{ r.montantPaye | currency:'EUR':'symbol':'1.0-0':'fr' }}</td>
+          <td>
+            <app-tag [variant]="statutVariant(r.statut)">{{ statutLabel(r.statut) }}</app-tag>
+          </td>
+          <td class="res-actions">
+            @if (r.statut === 'EN_ATTENTE') {
+            <button
+              class="action-btn action-btn--accept"
+              title="Valider"
+              (click)="valider(r.id)"
+              type="button"
+            >
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path
+                  d="M3 8l4 4 6-7"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </button>
+            <button
+              class="action-btn action-btn--refuse"
+              title="Refuser"
+              (click)="refuser(r.id)"
+              type="button"
+            >
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path
+                  d="M4 4l8 8M12 4l-8 8"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                />
+              </svg>
+            </button>
+            }
+          </td>
+        </tr>
+        }
+      </tbody>
+    </table>
+    } @if (auth.isConcessionnaire() && totalElements() > pageSize) {
+    <mat-paginator
+      [length]="totalElements()"
+      [pageSize]="pageSize"
+      [pageSizeOptions]="[20]"
+      (page)="onPageChange($event)"
+      showFirstLastButtons
+    />
+    }
+  </div>
+  } @else {
+  <!-- Client card view -->
+  @if (!reservations().length && !loading()) {
+  <div class="empty-state">
+    <p>Vous n'avez pas encore de réservation.</p>
+    <a
+      routerLink="/reservations/nouvelle"
+      class="btn btn--primary btn--sm"
+      style="margin-top: 16px"
+    >
+      Faire une réservation
+    </a>
+  </div>
+  } @else {
+  <div class="res-cards">
+    @for (r of reservations(); track r.id) {
+    <div class="res-card card-cabana">
+      <div class="res-card-head">
+        <div class="res-card-id">#{{ r.id }}</div>
+        <app-tag [variant]="statutVariant(r.statut)">{{ statutLabel(r.statut) }}</app-tag>
+      </div>
+
+      <div class="res-card-body">
+        <div class="res-card-parasols">
+          <span class="res-card-label">Parasols</span>
+          <span class="res-card-value mono">{{ formatParasols(r.parasols) }}</span>
+        </div>
+        <div class="res-card-dates">
+          <span class="res-card-label">Période</span>
+          <span class="res-card-value">
+            {{ r.dateDebut | date:'d MMMM':'':'fr' }} → {{ r.dateFin | date:'d MMMM yyyy':'':'fr' }}
+          </span>
+        </div>
+        <div class="res-card-equip">
+          <span class="res-card-label">Équipement</span>
+          <span class="res-card-value">{{ equipementLabel(r.equipement) }}</span>
+        </div>
+      </div>
+
+      <div class="res-card-foot">
+        <span class="res-card-amount"
+          >{{ r.montantPaye | currency:'EUR':'symbol':'1.2-2':'fr' }}</span
+        >
+      </div>
+    </div>
+    }
+  </div>
+  } }
+</div>

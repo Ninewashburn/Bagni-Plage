@@ -1,0 +1,81 @@
+<div class="auth-page">
+  <div class="auth-hero">
+    <app-beach-backdrop [height]="280" />
+    <div class="auth-hero-overlay"></div>
+    <div class="auth-hero-content">
+      <div class="estate-label">Estate 2026</div>
+      <div class="hero-title">Benvenuto</div>
+    </div>
+  </div>
+
+  <div class="auth-form-wrapper">
+    <div class="auth-card">
+      <div class="auth-header">
+        <app-bagni-logo [size]="20" />
+        <h1>Créer un compte</h1>
+        <p>Rejoignez la communauté Bagni Plage</p>
+      </div>
+
+      <form [formGroup]="form" (ngSubmit)="submit()">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px">
+          <mat-form-field appearance="outline">
+            <mat-label>Prénom</mat-label>
+            <input matInput formControlName="prenom" />
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Nom</mat-label>
+            <input matInput formControlName="nom" />
+          </mat-form-field>
+        </div>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Email</mat-label>
+          <input matInput formControlName="email" type="email" autocomplete="email" />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Mot de passe (8 caractères min.)</mat-label>
+          <input
+            matInput
+            formControlName="motDePasse"
+            type="password"
+            autocomplete="new-password"
+          />
+          @if (form.controls.motDePasse.hasError('minlength')) {
+          <mat-error>8 caractères minimum</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Pays</mat-label>
+          <mat-select formControlName="paysId">
+            @for (p of pays(); track p.id) {
+            <mat-option [value]="p.id">{{ p.nom }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        @if (error()) {
+        <p class="error-msg" style="text-align: center">{{ error() }}</p>
+        }
+
+        <button
+          class="btn btn--primary btn--full"
+          type="submit"
+          [disabled]="form.invalid || loading()"
+        >
+          @if (loading()) { Inscription… } @else { Créer mon compte }
+        </button>
+      </form>
+
+      <p style="text-align: center; margin-top: 20px; font-size: 0.875rem; color: var(--ink-soft)">
+        Déjà un compte ?
+        <a
+          routerLink="/login"
+          style="color: var(--primary); font-weight: 600; text-decoration: none"
+          >Se connecter</a
+        >
+      </p>
+    </div>
+  </div>
+</div>

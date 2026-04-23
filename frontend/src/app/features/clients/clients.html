@@ -1,0 +1,80 @@
+<div class="page-container">
+  <!-- Header -->
+  <div class="page-header">
+    <div>
+      <h1 class="section-title">Clients</h1>
+      <p class="section-sub">{{ totalElements() }} client(s) enregistré(s)</p>
+    </div>
+
+    <mat-form-field appearance="outline" class="filter-pays-field">
+      <mat-label>Pays</mat-label>
+      <mat-select [ngModel]="selectedPaysId()" (ngModelChange)="onPaysFilter($event)">
+        <mat-option [value]="null">Tous les pays</mat-option>
+        @for (p of pays(); track p.id) {
+        <mat-option [value]="p.id">{{ p.nom }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+  </div>
+
+  @if (loading()) {
+  <mat-progress-bar mode="indeterminate" color="accent" />
+  }
+
+  <!-- Card grid -->
+  @if (!clients().length && !loading()) {
+  <div class="empty-state">
+    <p>Aucun client trouvé</p>
+  </div>
+  } @else {
+  <div class="clients-grid">
+    @for (c of clients(); track c.id) {
+    <div class="client-card card-cabana">
+      <div class="client-card-head">
+        <app-avatar [initials]="initials(c)" [color]="avatarColor(c)" [size]="48" />
+        <div class="client-card-info">
+          <div class="client-card-name">{{ c.prenom }} {{ c.nom }}</div>
+          <div class="client-card-email">{{ c.email }}</div>
+          <div class="client-card-pays">{{ c.pays.nom }}</div>
+        </div>
+      </div>
+
+      <div class="client-card-meta">
+        <div class="client-meta-item">
+          <span class="client-meta-label">Inscrit le</span>
+          <span class="client-meta-value">{{ c.dateInscription | date:'d MMM yyyy':'':'fr' }}</span>
+        </div>
+      </div>
+
+      <div class="client-card-actions">
+        <button
+          class="btn btn--danger btn--sm"
+          (click)="supprimer(c)"
+          type="button"
+          title="Supprimer le client"
+        >
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="margin-right: 4px">
+            <path
+              d="M2 3.5h10M5.5 3.5V2.5h3v1M4 3.5l.5 8h5l.5-8"
+              stroke="currentColor"
+              stroke-width="1.2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+          Supprimer
+        </button>
+      </div>
+    </div>
+    }
+  </div>
+  } @if (totalElements() > pageSize) {
+  <mat-paginator
+    [length]="totalElements()"
+    [pageSize]="pageSize"
+    [pageSizeOptions]="[20]"
+    (page)="onPageChange($event)"
+    showFirstLastButtons
+  />
+  }
+</div>

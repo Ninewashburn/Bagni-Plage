@@ -1,0 +1,292 @@
+@if (auth.isConcessionnaire()) {
+<!-- ─── CONCESSIONNAIRE VIEW ─── -->
+<div class="planning-split">
+  <!-- Left: pending queue -->
+  <aside class="planning-queue">
+    <div class="queue-header">
+      <span class="queue-title">À traiter</span>
+      @if (pendingList().length) {
+      <span class="queue-badge">{{ pendingList().length }}</span>
+      }
+    </div>
+
+    @if (loading()) {
+    <div class="queue-skeleton">
+      @for (_ of [1,2,3]; track $index) {
+      <div class="skeleton-item"></div>
+      }
+    </div>
+    } @else if (!pendingList().length) {
+    <div class="queue-empty">
+      <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+        <circle cx="20" cy="20" r="18" stroke="var(--ink-muted)" stroke-width="1.5" />
+        <path d="M13 20h14M20 13v14" stroke="var(--mint)" stroke-width="2" stroke-linecap="round" />
+      </svg>
+      <p>Aucune réservation en attente</p>
+    </div>
+    } @else {
+    <div class="queue-list">
+      @for (r of pendingList(); track r.id) {
+      <button
+        class="queue-item"
+        [class.queue-item--active]="selectedRes()?.id === r.id"
+        (click)="selectedRes.set(r)"
+        type="button"
+      >
+        <app-avatar [initials]="initials(r)" [color]="avatarColor(r)" [size]="34" />
+        <div class="queue-item-body">
+          <div class="queue-item-name">{{ r.client.prenom }} {{ r.client.nom }}</div>
+          <div class="queue-item-meta">
+            {{ r.dateDebut | date:'d MMM':'':'fr' }} → {{ r.dateFin | date:'d MMM':'':'fr' }} · {{
+            formatParasols(r) }}
+          </div>
+        </div>
+        <div class="queue-item-amount">
+          {{ r.montantPaye | currency:'EUR':'symbol':'1.0-0':'fr' }}
+        </div>
+      </button>
+      }
+    </div>
+    }
+  </aside>
+
+  <!-- Right: calendar + grid -->
+  <div class="planning-main">
+    <!-- Toolbar -->
+    <div class="planning-toolbar">
+      <div class="view-toggle">
+        @for (v of views; track v) {
+        <button
+          class="view-btn"
+          [class.view-btn--active]="activeView() === v"
+          (click)="activeView.set(v)"
+          type="button"
+        >
+          {{ v | titlecase }}
+        </button>
+        }
+      </div>
+
+      <div class="week-nav">
+        <button class="btn btn--ghost btn--sm" (click)="prevWeek()" type="button">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path
+              d="M10 12L6 8l4-4"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+        </button>
+        <span class="week-label">
+          {{ weekStart() | date:'d MMM':'':'fr' }} – {{ weekEnd() | date:'d MMM yyyy':'':'fr' }}
+        </span>
+        <button class="btn btn--ghost btn--sm" (click)="nextWeek()" type="button">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path
+              d="M6 12l4-4-4-4"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+        </button>
+        <button class="btn btn--outline btn--sm" (click)="goToToday()" type="button">
+          Aujourd'hui
+        </button>
+      </div>
+
+      <div class="planning-stats">
+        <div class="stat-pill">
+          <span class="stat-value">{{ stats().occupes }}</span>
+          <span class="stat-label">parasols loués</span>
+        </div>
+        <div class="stat-pill stat-pill--accent">
+          <span class="stat-value">{{ stats().total | currency:'EUR':'symbol':'1.0-0':'fr' }}</span>
+          <span class="stat-label">cette semaine</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Weekly calendar header -->
+    <div class="week-header">
+      @for (day of weekDays(); track day.toISOString()) {
+      <div class="week-day-col" [class.week-day-col--today]="isToday(day)">
+        <div class="week-day-name">{{ day | date:'EEE':'':'fr' }}</div>
+        <div class="week-day-num">{{ day | date:'d' }}</div>
+        <div class="week-day-count">
+          @let count = getReservationsForDay(day).length; @if (count) {
+          <span class="day-count-badge">{{ count }}</span>
+          }
+        </div>
+      </div>
+      }
+    </div>
+
+    <!-- Parasol occupancy grid -->
+    @if (loading()) {
+    <mat-progress-bar mode="indeterminate" color="accent" />
+    }
+
+    <div class="parasol-grid-wrap">
+      <app-parasol-grid
+        [files]="files()"
+        [highlightIds]="highlightIds()"
+        [mode]="'manager'"
+        [selectable]="false"
+      />
+    </div>
+  </div>
+  <!-- /planning-main -->
+
+  <!-- Floating detail panel -->
+  @if (selectedRes(); as res) {
+  <div class="detail-panel">
+    <div class="detail-panel-header">
+      <button class="btn btn--ghost btn--sm" (click)="selectedRes.set(null)" type="button">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path
+            d="M12 4L4 12M4 4l8 8"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+          />
+        </svg>
+      </button>
+      <span class="detail-title">Réservation #{{ res.id }}</span>
+      <app-tag [variant]="statutVariant(res.statut)">
+        {{ res.statut === 'EN_ATTENTE' ? 'En attente' : res.statut === 'VALIDEE' ? 'Validée' :
+        'Refusée' }}
+      </app-tag>
+    </div>
+
+    <div class="detail-client">
+      <app-avatar [initials]="initials(res)" [color]="avatarColor(res)" [size]="44" />
+      <div>
+        <div class="detail-client-name">{{ res.client.prenom }} {{ res.client.nom }}</div>
+        <div class="detail-client-email">{{ res.client.email }}</div>
+        <div class="detail-client-pays">{{ res.client.pays.nom }}</div>
+      </div>
+    </div>
+
+    <div class="detail-rows">
+      <div class="detail-row">
+        <span class="detail-row-label">Période</span>
+        <span class="detail-row-value">
+          {{ res.dateDebut | date:'d MMMM':'':'fr' }} → {{ res.dateFin | date:'d MMMM yyyy':'':'fr'
+          }}
+        </span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-row-label">Parasols</span>
+        <span class="detail-row-value detail-parasols">{{ formatParasols(res) }}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-row-label">Équipement</span>
+        <span class="detail-row-value">{{ equipLabel(res.equipement) }}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-row-label">Montant</span>
+        <span class="detail-row-value detail-amount"
+          >{{ res.montantPaye | currency:'EUR':'symbol':'1.2-2':'fr' }}</span
+        >
+      </div>
+      @if (res.remarques) {
+      <div class="detail-row detail-row--full">
+        <span class="detail-row-label">Remarques</span>
+        <p class="detail-remarks">{{ res.remarques }}</p>
+      </div>
+      }
+    </div>
+
+    @if (res.statut === 'EN_ATTENTE') {
+    <div class="detail-actions">
+      <button class="btn btn--primary btn--full" (click)="valider(res)" type="button">
+        Valider la réservation
+      </button>
+      <button class="btn btn--danger btn--full" (click)="refuser(res)" type="button">
+        Refuser &amp; rembourser
+      </button>
+    </div>
+    }
+  </div>
+  }
+</div>
+<!-- /planning-split -->
+
+} @else {
+<!-- ─── CLIENT VIEW ─── -->
+<div class="client-planning">
+  <div class="client-planning-header">
+    <h1 class="page-title">Planning de la plage</h1>
+    <p class="page-subtitle">Disponibilités semaine du {{ weekStart() | date:'d MMMM':'':'fr' }}</p>
+    <div class="week-nav week-nav--client">
+      <button class="btn btn--ghost btn--sm" (click)="prevWeek()" type="button">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path
+            d="M10 12L6 8l4-4"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+      </button>
+      <button class="btn btn--outline btn--sm" (click)="goToToday()" type="button">
+        Aujourd'hui
+      </button>
+      <button class="btn btn--ghost btn--sm" (click)="nextWeek()" type="button">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path
+            d="M6 12l4-4-4-4"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  @if (loading()) {
+  <mat-progress-bar mode="indeterminate" color="accent" />
+  }
+
+  <div class="client-week-grid">
+    @for (day of weekDays(); track day.toISOString()) {
+    <div class="client-day-col" [class.client-day-col--today]="isToday(day)">
+      <div class="client-day-header">
+        <span class="client-day-name">{{ day | date:'EEE':'':'fr' }}</span>
+        <span class="client-day-num">{{ day | date:'d' }}</span>
+      </div>
+      <div class="client-day-reservations">
+        @for (r of getReservationsForDay(day); track r.id) {
+        <div
+          class="client-res-chip"
+          [class.client-res-chip--pending]="r.statut === 'EN_ATTENTE'"
+          [class.client-res-chip--booked]="r.statut === 'VALIDEE'"
+        >
+          <span class="chip-parasols">{{ formatParasols(r) }}</span>
+        </div>
+        } @if (!getReservationsForDay(day).length) {
+        <div class="client-day-empty">libre</div>
+        }
+      </div>
+    </div>
+    }
+  </div>
+
+  <div class="client-planning-grid">
+    <app-parasol-grid [files]="files()" [mode]="'client'" [selectable]="false" />
+  </div>
+
+  <div class="client-planning-cta">
+    <a routerLink="/reservations/nouvelle" class="btn btn--primary btn--lg">
+      Réserver un parasol
+    </a>
+  </div>
+</div>
+}

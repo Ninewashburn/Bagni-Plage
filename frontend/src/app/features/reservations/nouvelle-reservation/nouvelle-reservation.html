@@ -1,0 +1,318 @@
+<div class="page-container">
+  <!-- Back nav -->
+  <div class="nouv-header">
+    <a routerLink="/reservations" class="btn btn--ghost btn--sm">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <path
+          d="M10 12L6 8l4-4"
+          stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+      </svg>
+      Retour
+    </a>
+    <h1 class="page-title" style="margin: 0">Nouvelle réservation</h1>
+  </div>
+
+  @if (loadingFiles()) {
+  <mat-progress-bar mode="indeterminate" color="accent" />
+  }
+
+  <mat-stepper [linear]="true" #stepper class="bagni-stepper">
+    <!-- ── Étape 1 : Dates ─────────────────────────────────────────────── -->
+    <mat-step [stepControl]="dateForm" label="Dates">
+      <form [formGroup]="dateForm" class="step-form">
+        <div class="step-date-row">
+          <mat-form-field appearance="outline">
+            <mat-label>Date d'arrivée</mat-label>
+            <input
+              matInput
+              [matDatepicker]="pickerDebut"
+              formControlName="dateDebut"
+              [min]="minDate"
+            />
+            <mat-datepicker-toggle matIconSuffix [for]="pickerDebut" />
+            <mat-datepicker #pickerDebut />
+            @if (dateForm.get('dateDebut')?.hasError('required') &&
+            dateForm.get('dateDebut')?.touched) {
+            <mat-error>Date requise</mat-error>
+            }
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Date de départ</mat-label>
+            <input matInput [matDatepicker]="pickerFin" formControlName="dateFin" [min]="minDate" />
+            <mat-datepicker-toggle matIconSuffix [for]="pickerFin" />
+            <mat-datepicker #pickerFin />
+            @if (dateForm.get('dateFin')?.hasError('required') && dateForm.get('dateFin')?.touched)
+            {
+            <mat-error>Date requise</mat-error>
+            }
+          </mat-form-field>
+        </div>
+
+        @if (nbJours() > 0) {
+        <div class="step-info-chip">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <circle cx="7" cy="7" r="6" stroke="var(--sea)" stroke-width="1.2" />
+            <path d="M7 5v4M7 4v.5" stroke="var(--sea)" stroke-width="1.2" stroke-linecap="round" />
+          </svg>
+          {{ nbJours() }} jour(s) de location sélectionné(s)
+        </div>
+        }
+
+        <div class="step-actions">
+          <button
+            class="btn btn--primary"
+            type="button"
+            matStepperNext
+            (click)="onDatesNext()"
+            [disabled]="dateForm.invalid"
+          >
+            Choisir un parasol
+          </button>
+        </div>
+      </form>
+    </mat-step>
+
+    <!-- ── Étape 2 : Parasol ────────────────────────────────────────────── -->
+    <mat-step [stepControl]="parasolForm" label="Parasol">
+      <div class="step-form">
+        @if (loadingDisponibles()) {
+        <mat-progress-bar mode="indeterminate" color="accent" />
+        }
+
+        <div class="step-info-chip">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <circle cx="7" cy="7" r="6" stroke="var(--mint)" stroke-width="1.2" />
+            <path
+              d="M5 7l2 2 3-3"
+              stroke="var(--mint)"
+              stroke-width="1.2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+          {{ disponibleIds().size }} parasol(s) disponible(s) sur la période
+        </div>
+
+        <div class="beach-map-wrapper">
+          <div class="sea-banner">
+            <svg
+              width="14"
+              height="10"
+              viewBox="0 0 14 10"
+              fill="none"
+              style="vertical-align: middle; margin-right: 6px"
+            >
+              <path
+                d="M0 6c2-3 6-3 7 0s5 3 7 0"
+                stroke="currentColor"
+                stroke-width="1.2"
+                fill="none"
+              />
+              <path
+                d="M0 9c2-3 6-3 7 0s5 3 7 0"
+                stroke="currentColor"
+                stroke-width="1.2"
+                fill="none"
+              />
+            </svg>
+            Mer · File 1 (la plus proche, tarif premium)
+          </div>
+
+          <div class="beach-grid">
+            <div class="grid-corner"></div>
+            @for (file of sortedFiles(); track file.id) {
+            <div class="file-header">
+              F{{ file.numero }}<br />
+              <small>{{ file.prixJournalier | currency:'EUR':'symbol':'1.0-0':'fr' }}/j</small>
+            </div>
+            } @for (row of gridRows(); track row.rowNum) {
+            <div class="grid-row-num">{{ row.rowNum }}</div>
+            @for (cell of row.cells; track cell.file.id) { @if (cell.parasol) {
+            <button
+              type="button"
+              class="parasol-cell"
+              [class.parasol-available]="isAvailable(cell.parasol.id) && !isSelected(cell.parasol.id)"
+              [class.parasol-selected]="isSelected(cell.parasol.id)"
+              [class.parasol-taken]="!isAvailable(cell.parasol.id)"
+              [disabled]="!isAvailable(cell.parasol.id)"
+              [title]="cell.parasol.identifiant"
+              (click)="selectParasol(cell.parasol.id)"
+            >
+              {{ cell.parasol.numeroEmplacement }}
+            </button>
+            } @else {
+            <div class="parasol-empty"></div>
+            } } }
+          </div>
+        </div>
+
+        <div class="beach-legend">
+          <span class="legend-dot dot-available"></span> Disponible
+          <span class="legend-dot dot-taken"></span> Occupé
+          <span class="legend-dot dot-selected"></span> Sélectionné
+        </div>
+
+        @if (selectedParasol()) {
+        <div class="step-info-chip step-info-chip--accent">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <circle cx="7" cy="7" r="6" stroke="var(--accent)" stroke-width="1.2" />
+            <path d="M7 3v4l3 2" stroke="var(--accent)" stroke-width="1.2" stroke-linecap="round" />
+          </svg>
+          <strong>{{ selectedParasol()?.identifiant }}</strong> sélectionné · {{
+          selectedParasol()?.prixJournalier | currency:'EUR':'symbol':'1.0-0':'fr' }}/jour
+        </div>
+        }
+
+        <div class="step-actions">
+          <button class="btn btn--ghost" type="button" matStepperPrevious>Retour</button>
+          <button
+            class="btn btn--primary"
+            type="button"
+            matStepperNext
+            [disabled]="parasolForm.invalid"
+          >
+            Choisir l'équipement
+          </button>
+        </div>
+      </div>
+    </mat-step>
+
+    <!-- ── Étape 3 : Équipement ─────────────────────────────────────────── -->
+    <mat-step [stepControl]="equipementForm" label="Équipement">
+      <form [formGroup]="equipementForm" class="step-form">
+        <mat-form-field appearance="outline">
+          <mat-label>Équipement sous le parasol</mat-label>
+          <mat-select formControlName="equipement">
+            @for (e of equipements; track e.value) {
+            <mat-option [value]="e.value">{{ e.label }}</mat-option>
+            }
+          </mat-select>
+          @if (equipementForm.get('equipement')?.hasError('required') &&
+          equipementForm.get('equipement')?.touched) {
+          <mat-error>Veuillez choisir un équipement</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Remarques (optionnel)</mat-label>
+          <textarea matInput formControlName="remarques" rows="3"></textarea>
+        </mat-form-field>
+
+        <!-- Ricevuta recap -->
+        <div class="ricevuta">
+          <div class="ricevuta-label">Récapitulatif estimé</div>
+          <div class="price-row price-row--default">
+            <span
+              >Parasol {{ selectedParasol()?.identifiant }} · File {{ selectedParasol()?.numeroFile
+              }}</span
+            >
+            <span
+              >{{ selectedParasol()?.prixJournalier | currency:'EUR':'symbol':'1.0-0':'fr'
+              }}/j</span
+            >
+          </div>
+          <div class="price-row price-row--default">
+            <span>{{ nbJours() }} jour(s)</span>
+            <span>× {{ nbJours() }}</span>
+          </div>
+          <div class="price-total">
+            <span class="label">Total estimé</span>
+            <span class="amount">{{ totalPrice() | currency:'EUR':'symbol':'1.0-0':'fr' }}</span>
+          </div>
+        </div>
+
+        <div class="step-actions">
+          <button class="btn btn--ghost" type="button" matStepperPrevious>Retour</button>
+          <button
+            class="btn btn--primary"
+            type="button"
+            matStepperNext
+            [disabled]="equipementForm.invalid"
+          >
+            Procéder au paiement
+          </button>
+        </div>
+      </form>
+    </mat-step>
+
+    <!-- ── Étape 4 : Paiement ───────────────────────────────────────────── -->
+    <mat-step label="Paiement">
+      <div class="step-form">
+        <!-- Final ricevuta -->
+        <div class="ricevuta">
+          <div class="ricevuta-label">Récapitulatif final · Bagni Plage</div>
+          <div class="price-row price-row--default">
+            <span>Parasol</span>
+            <span class="mono-sm">{{ selectedParasol()?.identifiant }}</span>
+          </div>
+          <div class="price-row price-row--default">
+            <span>Période</span>
+            <span>
+              {{ dateForm.get('dateDebut')?.value | date:'d MMM':'':'fr' }} → {{
+              dateForm.get('dateFin')?.value | date:'d MMM yyyy':'':'fr' }}
+            </span>
+          </div>
+          <div class="price-row price-row--default">
+            <span>Durée</span>
+            <span>{{ nbJours() }} jour(s)</span>
+          </div>
+          <div class="price-row price-row--default">
+            <span>Équipement</span>
+            <span>{{ equipementForm.get('equipement')?.value }}</span>
+          </div>
+          <div class="price-total">
+            <span class="label">Montant total</span>
+            <span class="amount">{{ totalPrice() | currency:'EUR':'symbol':'1.0-0':'fr' }}</span>
+          </div>
+        </div>
+
+        <!-- PayPal sandbox screen -->
+        @if (!paymentSimulated()) {
+        <div class="paypal-screen">
+          <div class="paypal-logo"><span>Pay</span><span>Pal</span></div>
+          <div class="paypal-amount">{{ totalPrice() | currency:'EUR':'symbol':'1.2-2':'fr' }}</div>
+          <div class="paypal-sub">Paiement sécurisé · Sandbox</div>
+          <button
+            class="paypal-btn"
+            (click)="simulatePaiement()"
+            [disabled]="loadingCreate()"
+            type="button"
+          >
+            @if (loadingCreate()) { Traitement en cours… } @else { Confirmer le paiement }
+          </button>
+        </div>
+        } @else {
+        <div class="step-info-chip step-info-chip--mint">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <circle cx="7" cy="7" r="6" stroke="var(--mint)" stroke-width="1.2" />
+            <path
+              d="M4.5 7l2 2 3.5-3.5"
+              stroke="var(--mint)"
+              stroke-width="1.2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+          Paiement confirmé — création de la réservation…
+        </div>
+        }
+
+        <div class="step-actions">
+          <button
+            class="btn btn--ghost"
+            type="button"
+            matStepperPrevious
+            [disabled]="loadingCreate()"
+          >
+            Retour
+          </button>
+        </div>
+      </div>
+    </mat-step>
+  </mat-stepper>
+</div>

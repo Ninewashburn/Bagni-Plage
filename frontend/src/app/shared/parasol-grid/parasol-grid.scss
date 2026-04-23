@@ -1,0 +1,230 @@
+:host {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.grid-outer {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: linear-gradient(
+    180deg,
+    rgba(62, 125, 140, 0.18) 0%,
+    rgba(62, 125, 140, 0.06) 32%,
+    rgba(217, 195, 154, 0.2) 34%,
+    rgba(217, 195, 154, 0.12) 100%
+  );
+  cursor: grab;
+  user-select: none;
+  border-radius: 16px;
+
+  &:active {
+    cursor: grabbing;
+  }
+}
+
+.sea-label {
+  position: absolute;
+  top: 10px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 0.75rem;
+  color: var(--sea-deep);
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.grid-inner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform-origin: center;
+  transition: transform 0.2s;
+}
+
+.grid-wrapper {
+  position: relative;
+  padding: 4px 0;
+}
+
+.aisle {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background: rgba(217, 195, 154, 0.55);
+  border-left: 1px dashed rgba(90, 68, 50, 0.35);
+  border-right: 1px dashed rgba(90, 68, 50, 0.35);
+  pointer-events: none;
+
+  .aisle-label {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(-90deg);
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-size: 0.5625rem;
+    color: var(--ink-soft);
+    letter-spacing: 0.25em;
+    white-space: nowrap;
+  }
+}
+
+.row-label {
+  position: absolute;
+  left: -24px;
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 0.6875rem;
+  color: var(--ink-soft);
+  width: 20px;
+  text-align: right;
+}
+
+.parasol {
+  position: absolute;
+  border: none;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition:
+    transform 0.15s,
+    box-shadow 0.15s,
+    background 0.15s;
+  z-index: 1;
+
+  &:disabled {
+    opacity: 0.8;
+  }
+}
+
+.parasol-dot {
+  border-radius: 50%;
+  display: block;
+}
+
+.parasol-id-label {
+  position: absolute;
+  top: -18px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--font-sans);
+  font-size: 0.5rem;
+  color: var(--primary);
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.tooltip {
+  position: absolute;
+  transform: translate(-50%, -100%);
+  background: var(--ink);
+  color: var(--bg);
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  pointer-events: none;
+  z-index: 20;
+  white-space: nowrap;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+
+  .tooltip-title {
+    font-family: var(--font-display);
+    font-size: 0.9375rem;
+    margin-bottom: 2px;
+  }
+
+  .tooltip-sub {
+    font-size: 0.6875rem;
+    opacity: 0.8;
+  }
+
+  .tooltip-arrow {
+    position: absolute;
+    bottom: -5px;
+    left: 50%;
+    transform: translateX(-50%) rotate(45deg);
+    width: 10px;
+    height: 10px;
+    background: var(--ink);
+  }
+}
+
+.zoom-controls {
+  position: absolute;
+  bottom: 14px;
+  right: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  background: var(--bg-card);
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--border);
+}
+
+.zoom-btn {
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  color: var(--ink);
+  cursor: pointer;
+  font-size: 1.125rem;
+  font-family: var(--font-sans);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.12s;
+
+  &:hover {
+    background: rgba(200, 85, 61, 0.1);
+  }
+}
+
+.legend {
+  position: absolute;
+  bottom: 14px;
+  left: 14px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  background: rgba(255, 252, 244, 0.88);
+  backdrop-filter: blur(8px);
+  padding: 7px 14px;
+  border-radius: 999px;
+  font-family: var(--font-sans);
+  font-size: 0.6875rem;
+  color: var(--ink-soft);
+  border: 1px solid var(--border);
+
+  html.dark-theme & {
+    background: rgba(38, 29, 19, 0.88);
+  }
+}
+
+.legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}

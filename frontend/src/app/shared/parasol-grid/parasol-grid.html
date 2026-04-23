@@ -1,0 +1,96 @@
+<div
+  #gridContainer
+  class="grid-outer"
+  (wheel)="onWheel($event)"
+  (mousedown)="onMouseDown($event)"
+  (mousemove)="onMouseMove($event)"
+  (mouseup)="onMouseUp()"
+  (mouseleave)="onMouseUp(); hover.set(null)"
+>
+  <!-- Sea label -->
+  <div class="sea-label">~ ~ ~ il mare ~ ~ ~</div>
+
+  <!-- Pannable / zoomable inner -->
+  <div class="grid-inner" [style.transform]="getTransform()">
+    <div class="grid-wrapper" [style.width.px]="wrapperW()" [style.height.px]="wrapperH()">
+      <!-- Central aisle -->
+      <div class="aisle" [style.left.px]="aisleX()" [style.width.px]="AISLE - GAP">
+        <span class="aisle-label">ALLÉE</span>
+      </div>
+
+      <!-- Row labels -->
+      @for (r of rowLabels(); track r) {
+      <div class="row-label" [style.top.px]="yFor(r) + CELL / 2 - 7">{{ r }}ᶠ</div>
+      }
+
+      <!-- Parasols -->
+      @for (p of gridParasols(); track p.id) {
+      <button
+        type="button"
+        class="parasol"
+        [attr.data-parasol]="p.identifiant"
+        [style.left.px]="xFor(p.col)"
+        [style.top.px]="yFor(p.row)"
+        [style.width.px]="CELL"
+        [style.height.px]="CELL"
+        [style.background]="parasolColor(p)"
+        [style.box-shadow]="parasolBoxShadow(p)"
+        [style.transform]="parasolTransform(p)"
+        [style.cursor]="isDisabled(p) ? 'not-allowed' : 'pointer'"
+        [disabled]="isDisabled(p)"
+        (mouseenter)="onParasolEnter(p, $event)"
+        (mouseleave)="hover.set(null)"
+        (click)="onParasolClick(p)"
+      >
+        <span
+          class="parasol-dot"
+          [style.width.px]="CELL * 0.22"
+          [style.height.px]="CELL * 0.22"
+          [style.background]="p.status === 'selected' ? '#FBF5E9' : 'rgba(43,29,19,.35)'"
+        >
+        </span>
+        @if (p.status === 'selected') {
+        <span class="parasol-id-label">{{ p.identifiant }}</span>
+        }
+      </button>
+      }
+    </div>
+  </div>
+
+  <!-- Tooltip -->
+  @if (getHoveredParasol(); as hp) {
+  <div class="tooltip" [style.left.px]="tooltipPos().x" [style.top.px]="tooltipPos().y - 8">
+    <div class="tooltip-title">{{ hp.identifiant }}</div>
+    <div class="tooltip-sub">
+      File {{ hp.row }} · @if (hp.status === 'free') { €{{ hp.prixJournalier }}/jour } @else { {{
+      statusLabel(hp.status) }} }
+    </div>
+    <div class="tooltip-arrow"></div>
+  </div>
+  }
+
+  <!-- Zoom controls -->
+  <div class="zoom-controls">
+    <button class="zoom-btn" (click)="zoomIn()" title="Zoom avant">+</button>
+    <button class="zoom-btn" (click)="zoomOut()" title="Zoom arrière">−</button>
+    <button class="zoom-btn" (click)="zoomReset()" title="Réinitialiser">⌾</button>
+  </div>
+
+  <!-- Legend -->
+  <div class="legend">
+    <span class="legend-item"
+      ><span class="legend-dot" style="background: var(--mint)"></span> Libre</span
+    >
+    <span class="legend-item"
+      ><span class="legend-dot" style="background: rgba(43, 29, 19, 0.25)"></span> Réservé</span
+    >
+    <span class="legend-item"
+      ><span class="legend-dot" style="background: var(--accent)"></span> Attente</span
+    >
+    @if (mode() === 'manager') {
+    <span class="legend-item"
+      ><span class="legend-dot" style="background: var(--primary)"></span> Sélection</span
+    >
+    }
+  </div>
+</div>
