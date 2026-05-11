@@ -1,0 +1,65 @@
+<div class="page-container public-page">
+  <a routerLink="/plages" class="back-link">‹ Toutes les plages</a>
+
+  <section class="beach-detail-hero">
+    <div>
+      <span class="section-label">{{ beach().location }}</span>
+      <h1>{{ beach().name }}</h1>
+      <p>{{ beach().longDescription }}</p>
+      <div class="guide-actions">
+        @if (auth.isAuthenticated() && !auth.isConcessionnaire()) {
+        <a routerLink="/reserver" class="btn btn--primary">Choisir un parasol</a>
+        } @else if (!auth.isAuthenticated()) {
+        <a routerLink="/register" class="btn btn--primary">Créer mon compte</a>
+        }
+        <a routerLink="/guide-local" class="btn btn--outline">Voir le guide local</a>
+      </div>
+    </div>
+    <div
+      class="beach-photo beach-detail-photo"
+      [class.is-pinede]="beach().imageClass === 'is-pinede'"
+      [class.is-atlantique]="beach().imageClass === 'is-atlantique'"
+    ></div>
+  </section>
+
+  <section class="beach-detail-grid">
+    <article>
+      <span>Saison</span>
+      <strong>{{ beach().season }}</strong>
+    </article>
+    <article>
+      <span>Tarif</span>
+      <strong>{{ beach().price }}</strong>
+    </article>
+    <article>
+      <span>Disponibilité</span>
+      <strong>{{ beach().availability }}</strong>
+    </article>
+  </section>
+
+  <section class="beach-detail-sections">
+    <article>
+      <h2>Services</h2>
+      <ul>
+        @for (highlight of beach().highlights; track highlight) {
+        <li>{{ highlight }}</li>
+        }
+      </ul>
+    </article>
+    <article>
+      <h2>Ambiance</h2>
+      <div class="score-list">
+        @for (score of beach().scores; track score.label) {
+        <span>{{ score.label }} <strong>{{ score.value }}</strong></span>
+        }
+      </div>
+    </article>
+    <article>
+      <h2>Conditions</h2>
+      <p>
+        Les réservations sont confirmées après paiement. La facture reste disponible depuis votre
+        compte et le QR Pass est préparé pour l’arrivée.
+      </p>
+    </article>
+  </section>
+</div>

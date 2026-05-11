@@ -17,21 +17,18 @@
   </div>
 
   <nav class="topbar-nav" aria-label="Navigation principale">
-    <a
-      routerLink="/guide"
-      routerLinkActive="active"
-      [routerLinkActiveOptions]="{ exact: true }"
-      (click)="goToGuide(null, $event)"
+    <a routerLink="/guide" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }"
       >Accueil</a
     >
-    <a routerLink="/guide" fragment="plages" (click)="goToGuide('plages', $event)">Plages</a>
-    <a routerLink="/guide" fragment="offres" (click)="goToGuide('offres', $event)">Offres</a>
+    <a routerLink="/plages" routerLinkActive="active">Plages</a>
+    <a routerLink="/offres" routerLinkActive="active">Offres</a>
+    <a routerLink="/guide-local" routerLinkActive="active">Guide local</a>
   </nav>
 
   <span class="spacer"></span>
 
   @if (auth.isAuthenticated() && !auth.isConcessionnaire()) {
-  <a routerLink="/reservations/nouvelle" class="btn btn--primary btn--sm topbar-cta">Réserver</a>
+  <a routerLink="/reserver" class="btn btn--primary btn--sm topbar-cta">Réserver</a>
   }
 
   <button

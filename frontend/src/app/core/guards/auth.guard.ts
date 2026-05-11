@@ -15,7 +15,9 @@ export const guestOnlyGuard: CanActivateFn = () => {
 
   if (!authService.isAuthenticated()) return true;
 
-  return inject(Router).createUrlTree([authService.isConcessionnaire() ? '/dashboard' : '/profil']);
+  return inject(Router).createUrlTree([
+    authService.isConcessionnaire() ? '/dashboard' : '/mon-compte',
+  ]);
 };
 
 export const concessionnaireGuard: CanActivateFn = () => {

@@ -10,16 +10,17 @@
     <div class="footer-columns">
       <section>
         <h2>Explorer</h2>
-        <a routerLink="/guide" fragment="plages">Nos plages</a>
-        <a routerLink="/guide">Guide local</a>
-        <a routerLink="/guide">Autour de la plage</a>
+        <a routerLink="/plages">Nos plages</a>
+        <a routerLink="/offres">Pass & offres</a>
+        <a routerLink="/guide-local">Guide local</a>
       </section>
 
       <section>
         <h2>Réserver</h2>
-        <a routerLink="/reservations/nouvelle">Choisir un parasol</a>
+        <a routerLink="/reserver">Choisir un parasol</a>
         @if (auth.isAuthenticated()) {
         <a routerLink="/reservations">Mes réservations</a>
+        <a routerLink="/ma-journee">Ma journée</a>
         } @else {
         <a routerLink="/login">Connexion</a>
         <a routerLink="/register">Créer un compte</a>

@@ -15,7 +15,7 @@
         } @else {
         <a routerLink="/register" class="btn btn--primary">Créer mon compte</a>
         }
-        <a href="#plages" class="btn btn--outline">Explorer les plages</a>
+        <a routerLink="/plages" class="btn btn--outline">Explorer les plages</a>
         <a
           href="https://www.google.com/maps?q=Le+Grau-du-Roi"
           target="_blank"
@@ -43,6 +43,30 @@
     </div>
   </section>
 
+  <section class="how-it-works-section">
+    <div class="guide-section-head">
+      <span class="section-label">Comment ça marche</span>
+      <h2>Réserver sa plage comme une séance</h2>
+    </div>
+    <div class="how-it-works-grid">
+      <article>
+        <span>1</span>
+        <h3>Choisissez une plage</h3>
+        <p>Comparez les ambiances, services, tarifs et disponibilités.</p>
+      </article>
+      <article>
+        <span>2</span>
+        <h3>Sélectionnez votre parasol</h3>
+        <p>Repérez l’emplacement sur le plan et ajoutez le mobilier souhaité.</p>
+      </article>
+      <article>
+        <span>3</span>
+        <h3>Présentez votre QR Pass</h3>
+        <p>Retrouvez votre réservation, votre facture et votre accès depuis votre compte.</p>
+      </article>
+    </div>
+  </section>
+
   <section class="beach-sites-section" id="plages">
     <div class="guide-section-head">
       <span class="section-label">Nos plages</span>
@@ -59,6 +83,7 @@
           <strong>{{ site.price }}</strong>
           <span>{{ site.season }}</span>
         </div>
+        <a [routerLink]="['/plages', site.slug]" class="inline-card-link">Voir la plage</a>
         <ul>
           @for (highlight of site.highlights; track highlight) {
           <li>{{ highlight }}</li>
@@ -87,7 +112,7 @@
         } @else {
         <a routerLink="/register" class="btn btn--primary">Créer mon compte</a>
         }
-        <a routerLink="/guide" fragment="plages" class="btn btn--outline">Voir les plages</a>
+        <a routerLink="/plages" class="btn btn--outline">Voir les plages</a>
       </div>
     </div>
 

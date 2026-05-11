@@ -1,18 +1,17 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
-import { BEACH_SITES, GUIDE_PLACES, QR_CELLS } from '../../shared/bagni-catalog';
+import { BEACH_SITES } from '../../shared/bagni-catalog';
 
 @Component({
-  selector: 'app-guide',
+  selector: 'app-plages',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [RouterLink],
-  templateUrl: './guide.html',
+  templateUrl: './plages.html',
 })
-export class GuideComponent {
+export class PlagesComponent {
   protected auth = inject(AuthService);
-  protected readonly qrCells = QR_CELLS;
-  protected readonly beachSites = BEACH_SITES;
-  protected readonly places = GUIDE_PLACES;
+  protected readonly beaches = BEACH_SITES;
+  protected readonly filters = ['Ville', 'Date', 'Budget', 'Famille', 'Premium', 'Parking'];
 }

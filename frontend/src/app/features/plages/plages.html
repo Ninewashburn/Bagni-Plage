@@ -1,0 +1,51 @@
+<div class="page-container public-page">
+  <section class="catalog-hero">
+    <span class="section-label">Nos plages</span>
+    <h1>Choisissez votre site de plage.</h1>
+    <p>
+      Comparez les ambiances, les services et les tarifs avant de sélectionner votre emplacement.
+    </p>
+  </section>
+
+  <div class="catalog-filters" aria-label="Filtres de recherche">
+    @for (filter of filters; track filter) {
+    <button type="button">{{ filter }}</button>
+    }
+  </div>
+
+  <section class="beach-catalog-grid">
+    @for (beach of beaches; track beach.slug) {
+    <article class="beach-catalog-card">
+      <div
+        class="beach-photo"
+        [class.is-pinede]="beach.imageClass === 'is-pinede'"
+        [class.is-atlantique]="beach.imageClass === 'is-atlantique'"
+      ></div>
+      <div class="beach-catalog-body">
+        <div>
+          <span>{{ beach.city }}</span>
+          <h2>{{ beach.name }}</h2>
+          <p>{{ beach.mood }}</p>
+        </div>
+        <div class="beach-card-tags">
+          @for (badge of beach.badges; track badge) {
+          <span>{{ badge }}</span>
+          }
+        </div>
+        <div class="beach-catalog-meta">
+          <strong>{{ beach.price }}</strong>
+          <span>{{ beach.availability }}</span>
+        </div>
+        <div class="beach-catalog-actions">
+          <a [routerLink]="['/plages', beach.slug]" class="btn btn--outline btn--sm">
+            Voir la plage
+          </a>
+          @if (auth.isAuthenticated() && !auth.isConcessionnaire()) {
+          <a routerLink="/reserver" class="btn btn--primary btn--sm">Réserver</a>
+          }
+        </div>
+      </div>
+    </article>
+    }
+  </section>
+</div>

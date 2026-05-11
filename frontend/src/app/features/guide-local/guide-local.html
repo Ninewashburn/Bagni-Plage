@@ -1,0 +1,33 @@
+<div class="page-container public-page">
+  <section class="catalog-hero">
+    <span class="section-label">Guide local</span>
+    <h1>Les bonnes adresses autour des plages.</h1>
+    <p>
+      Préparez votre arrivée, votre déjeuner et votre fin de journée avec les lieux utiles proches
+      des sites Bagni.
+    </p>
+  </section>
+
+  <div class="catalog-filters">
+    @for (category of categories; track category) {
+    <button type="button">{{ category }}</button>
+    }
+  </div>
+
+  <section class="guide-grid">
+    @for (place of places; track place.name) {
+    <article class="guide-place-card">
+      <div class="guide-place-top">
+        <span class="guide-place-type">{{ place.type }}</span>
+        <span class="guide-place-tag">{{ place.tag }}</span>
+      </div>
+      <h3>{{ place.name }}</h3>
+      <p>{{ place.description }}</p>
+      <div class="guide-place-meta">
+        <span>{{ place.distance }}</span>
+        <span>{{ place.walk }} à pied</span>
+      </div>
+    </article>
+    }
+  </section>
+</div>

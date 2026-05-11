@@ -17,6 +17,28 @@ export const routes: Routes = [
     loadComponent: () => import('./features/guide/guide').then(m => m.GuideComponent),
   },
   {
+    path: 'plages',
+    loadComponent: () => import('./features/plages/plages').then(m => m.PlagesComponent),
+  },
+  {
+    path: 'plages/:slug',
+    loadComponent: () => import('./features/plages/plage-detail').then(m => m.PlageDetailComponent),
+  },
+  {
+    path: 'offres',
+    loadComponent: () => import('./features/offres/offres').then(m => m.OffresComponent),
+  },
+  {
+    path: 'guide-local',
+    loadComponent: () =>
+      import('./features/guide-local/guide-local').then(m => m.GuideLocalComponent),
+  },
+  {
+    path: 'reserver',
+    redirectTo: 'reservations/nouvelle',
+    pathMatch: 'full',
+  },
+  {
     path: 'dashboard',
     loadComponent: () => import('./features/dashboard/dashboard').then(m => m.DashboardComponent),
     canActivate: [authGuard, concessionnaireGuard],
@@ -48,6 +70,16 @@ export const routes: Routes = [
   {
     path: 'profil',
     loadComponent: () => import('./features/profil/profil').then(m => m.ProfilComponent),
+    canActivate: [authGuard],
+  },
+  {
+    path: 'mon-compte',
+    redirectTo: 'profil',
+    pathMatch: 'full',
+  },
+  {
+    path: 'ma-journee',
+    loadComponent: () => import('./features/ma-journee/ma-journee').then(m => m.MaJourneeComponent),
     canActivate: [authGuard],
   },
   { path: '**', redirectTo: 'login' },

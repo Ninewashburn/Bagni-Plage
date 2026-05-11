@@ -1,0 +1,49 @@
+<div class="page-container public-page">
+  <section class="offers-hero">
+    <div>
+      <span class="section-label">Pass & offres</span>
+      <h1>Des formules pour chaque journée de plage.</h1>
+      <p>
+        Réservation à la journée, week-end, famille ou premium : chaque offre prépare votre accès,
+        votre mobilier, votre QR Pass et votre facture.
+      </p>
+      <div class="guide-actions">
+        @if (auth.isAuthenticated() && !auth.isConcessionnaire()) {
+        <a routerLink="/reserver" class="btn btn--primary">Réserver</a>
+        <a routerLink="/profil" class="btn btn--outline">Voir mon compte</a>
+        } @else if (!auth.isAuthenticated()) {
+        <a routerLink="/register" class="btn btn--primary">Créer mon compte</a>
+        }
+      </div>
+    </div>
+
+    <div class="offer-pass-card">
+      <span>Bagni Pass</span>
+      <div class="qr-card">
+        <div class="qr-code" aria-hidden="true">
+          @for (cell of qrCells; track $index) {
+          <span [class.is-dark]="cell"></span>
+          }
+        </div>
+      </div>
+      <strong>Ticket numérique</strong>
+      <small>Disponible après validation</small>
+    </div>
+  </section>
+
+  <section class="offers-grid">
+    @for (offer of offers; track offer.name) {
+    <article class="offer-card">
+      <span>{{ offer.badge }}</span>
+      <h2>{{ offer.name }}</h2>
+      <strong>{{ offer.price }}</strong>
+      <p>{{ offer.description }}</p>
+      <ul>
+        @for (item of offer.includes; track item) {
+        <li>{{ item }}</li>
+        }
+      </ul>
+    </article>
+    }
+  </section>
+</div>

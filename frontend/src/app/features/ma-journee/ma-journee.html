@@ -1,0 +1,54 @@
+<div class="page-container public-page">
+  <section class="day-page-hero">
+    <div>
+      <span class="section-label">Ma journée</span>
+      <h1>Votre journée à Bagni Plage.</h1>
+      <p>
+        Retrouvez ici votre prochain accès plage, votre QR Pass, vos informations d’arrivée et les
+        recommandations utiles autour du site réservé.
+      </p>
+      <div class="guide-actions">
+        <a routerLink="/reservations" class="btn btn--primary">Mes réservations</a>
+        <a routerLink="/guide-local" class="btn btn--outline">Guide local</a>
+      </div>
+    </div>
+
+    <div class="offer-pass-card">
+      <span>QR Pass</span>
+      <div class="qr-card">
+        <div class="qr-code" aria-hidden="true">
+          @for (cell of qrCells; track $index) {
+          <span [class.is-dark]="cell"></span>
+          }
+        </div>
+      </div>
+      <strong>En attente de réservation</strong>
+      <small>Le ticket apparaît après paiement</small>
+    </div>
+  </section>
+
+  <section class="day-summary-grid">
+    <article>
+      <span>Prochaine plage</span>
+      <strong>À confirmer</strong>
+    </article>
+    <article>
+      <span>Emplacement</span>
+      <strong>À choisir</strong>
+    </article>
+    <article>
+      <span>Facture</span>
+      <strong>Disponible après paiement</strong>
+    </article>
+  </section>
+
+  <section class="timeline-card">
+    <h2>Déroulé conseillé</h2>
+    @for (item of timeline; track item.time) {
+    <div>
+      <strong>{{ item.time }}</strong>
+      <span>{{ item.label }}</span>
+    </div>
+    }
+  </section>
+</div>
