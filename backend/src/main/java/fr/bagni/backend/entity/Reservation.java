@@ -7,6 +7,7 @@ import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -55,4 +56,26 @@ public class Reservation {
 
     @Column(columnDefinition = "TEXT")
     private String remarques;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "traite_par_id")
+    private Concessionnaire traitePar;
+
+    @Column(name = "date_traitement")
+    private LocalDateTime dateTraitement;
+
+    @Column(name = "motif_refus", columnDefinition = "TEXT")
+    private String motifRefus;
+
+    @Column(name = "paiement_reference", length = 80)
+    private String paiementReference;
+
+    @Column(name = "paiement_statut", length = 40)
+    private String paiementStatut;
+
+    @Column(name = "remboursement_reference", length = 80)
+    private String remboursementReference;
+
+    @Column(name = "remboursement_statut", length = 40)
+    private String remboursementStatut;
 }

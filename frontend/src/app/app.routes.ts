@@ -1,8 +1,8 @@
 import { Routes } from '@angular/router';
-import { authGuard, clientGuard, concessionnaireGuard } from './core/guards/auth.guard';
+import { authGuard, concessionnaireGuard, guestOnlyGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
-  { path: '', redirectTo: 'login', pathMatch: 'full' },
+  { path: '', redirectTo: 'guide', pathMatch: 'full' },
   {
     path: 'login',
     loadComponent: () => import('./features/auth/login/login').then(m => m.LoginComponent),
@@ -10,11 +10,21 @@ export const routes: Routes = [
   {
     path: 'register',
     loadComponent: () => import('./features/auth/register/register').then(m => m.RegisterComponent),
+    canActivate: [guestOnlyGuard],
+  },
+  {
+    path: 'guide',
+    loadComponent: () => import('./features/guide/guide').then(m => m.GuideComponent),
+  },
+  {
+    path: 'dashboard',
+    loadComponent: () => import('./features/dashboard/dashboard').then(m => m.DashboardComponent),
+    canActivate: [authGuard, concessionnaireGuard],
   },
   {
     path: 'planning',
     loadComponent: () => import('./features/planning/planning').then(m => m.PlanningComponent),
-    canActivate: [authGuard],
+    canActivate: [authGuard, concessionnaireGuard],
   },
   {
     path: 'reservations',
@@ -28,7 +38,7 @@ export const routes: Routes = [
       import('./features/reservations/nouvelle-reservation/nouvelle-reservation').then(
         m => m.NouvelleReservationComponent,
       ),
-    canActivate: [authGuard, clientGuard],
+    canActivate: [authGuard],
   },
   {
     path: 'clients',

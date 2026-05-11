@@ -5,6 +5,7 @@ import fr.bagni.backend.entity.enums.Statut;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 public record ReservationResponse(
@@ -16,5 +17,11 @@ public record ReservationResponse(
         LocalDate dateFin,
         BigDecimal montantPaye,
         Statut statut,
-        String remarques
+        String remarques,
+        LocalDateTime dateTraitement,
+        String motifRefus,
+        String paiementReference,
+        String paiementStatut,
+        String remboursementReference,
+        String remboursementStatut
 ) {}

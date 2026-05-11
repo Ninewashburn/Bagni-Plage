@@ -7,14 +7,12 @@
       <p class="section-sub">Gérez vos séjours à Bagni Plage</p>
       }
     </div>
-    @if (!auth.isConcessionnaire()) {
     <a routerLink="/reservations/nouvelle" class="btn btn--primary">
       <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="margin-right: 6px">
         <path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
       </svg>
       Nouvelle réservation
     </a>
-    }
   </div>
 
   <!-- Filter pills (concessionnaire) -->
@@ -112,6 +110,27 @@
               </svg>
             </button>
             }
+            <button
+              class="action-btn action-btn--invoice"
+              title="Télécharger la facture"
+              (click)="telechargerFacture(r)"
+              type="button"
+            >
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path
+                  d="M4 2.5h8v11l-1.5-.8-1.5.8-1.5-.8-1.5.8-1.5-.8-1.5.8v-11Z"
+                  stroke="currentColor"
+                  stroke-width="1.3"
+                  stroke-linejoin="round"
+                />
+                <path
+                  d="M6 6h4M6 8.5h4"
+                  stroke="currentColor"
+                  stroke-width="1.3"
+                  stroke-linecap="round"
+                />
+              </svg>
+            </button>
           </td>
         </tr>
         }
@@ -132,13 +151,6 @@
   @if (!reservations().length && !loading()) {
   <div class="empty-state">
     <p>Vous n'avez pas encore de réservation.</p>
-    <a
-      routerLink="/reservations/nouvelle"
-      class="btn btn--primary btn--sm"
-      style="margin-top: 16px"
-    >
-      Faire une réservation
-    </a>
   </div>
   } @else {
   <div class="res-cards">
@@ -166,10 +178,25 @@
         </div>
       </div>
 
+      <div class="invoice-preview">
+        <div class="invoice-preview-title">Facture</div>
+        <div class="invoice-preview-row">
+          <span>Référence PayPal</span>
+          <span>{{ r.paiementReference || 'En attente' }}</span>
+        </div>
+        <div class="invoice-preview-row">
+          <span>Statut paiement</span>
+          <span>{{ r.paiementStatut || 'En attente' }}</span>
+        </div>
+      </div>
+
       <div class="res-card-foot">
         <span class="res-card-amount"
           >{{ r.montantPaye | currency:'EUR':'symbol':'1.2-2':'fr' }}</span
         >
+        <button class="btn btn--outline btn--sm" type="button" (click)="telechargerFacture(r)">
+          Télécharger PDF
+        </button>
       </div>
     </div>
     }

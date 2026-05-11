@@ -35,6 +35,12 @@ export interface Reservation {
   montantPaye: number;
   statut: Statut;
   remarques?: string;
+  dateTraitement?: string;
+  motifRefus?: string;
+  paiementReference?: string;
+  paiementStatut?: string;
+  remboursementReference?: string;
+  remboursementStatut?: string;
 }
 
 export interface ReservationRequest {
@@ -42,6 +48,6 @@ export interface ReservationRequest {
   equipement: Equipement;
   dateDebut: string;
   dateFin: string;
-  montantPaye: number;
   remarques?: string;
+  clientId?: number;
 }

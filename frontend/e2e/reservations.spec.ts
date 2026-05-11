@@ -1,26 +1,31 @@
 import { test, expect } from '@playwright/test';
 
+const validClientToken = `header.${Buffer.from(JSON.stringify({ exp: 4102444800 })).toString('base64url')}.signature`;
+const validAdminToken = `header.${Buffer.from(JSON.stringify({ exp: 4102444800 })).toString('base64url')}.signature`;
+
 // Helper: simulate a logged-in client session via localStorage
 async function loginAsClient(page: import('@playwright/test').Page) {
   await page.goto('/');
   await page.evaluate(() => {
-    localStorage.setItem('jwt_token', 'fake.client.token');
+    localStorage.setItem('jwt_token', 'TOKEN_PLACEHOLDER');
     localStorage.setItem('user_role', 'ROLE_CLIENT');
     localStorage.setItem('user_nom', 'Client');
     localStorage.setItem('user_prenom', 'Test');
     localStorage.setItem('user_email', 'client@test.com');
   });
+  await page.evaluate(token => localStorage.setItem('jwt_token', token), validClientToken);
 }
 
 async function loginAsConcessionnaire(page: import('@playwright/test').Page) {
   await page.goto('/');
   await page.evaluate(() => {
-    localStorage.setItem('jwt_token', 'fake.conc.token');
+    localStorage.setItem('jwt_token', 'TOKEN_PLACEHOLDER');
     localStorage.setItem('user_role', 'ROLE_CONCESSIONNAIRE');
     localStorage.setItem('user_nom', 'Concessionnaire');
     localStorage.setItem('user_prenom', 'Admin');
     localStorage.setItem('user_email', 'admin@bagni.it');
   });
+  await page.evaluate(token => localStorage.setItem('jwt_token', token), validAdminToken);
 }
 
 test.describe('Client — Reservations page', () => {

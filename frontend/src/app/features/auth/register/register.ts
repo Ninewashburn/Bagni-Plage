@@ -85,10 +85,7 @@ export class RegisterComponent {
     this.error.set(null);
 
     this.authService.register(this.form.getRawValue()).subscribe({
-      next: response => {
-        this.authService.storeSession(response);
-        this.router.navigate(['/reservations']);
-      },
+      next: () => this.router.navigate(['/reservations']),
       error: () => {
         this.error.set("Erreur lors de l'inscription. Vérifiez vos informations.");
         this.loading.set(false);

@@ -17,6 +17,24 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
         <app-bagni-logo [size]="17" />
       </div>
 
+      <a class="sidebar-nav-item" routerLink="/dashboard" routerLinkActive="active">
+        <svg
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.8"
+          stroke-linecap="round"
+        >
+          <rect x="3" y="3" width="7" height="8" rx="1.5" />
+          <rect x="14" y="3" width="7" height="5" rx="1.5" />
+          <rect x="14" y="12" width="7" height="9" rx="1.5" />
+          <rect x="3" y="15" width="7" height="6" rx="1.5" />
+        </svg>
+        Tableau de bord
+      </a>
+
       <a class="sidebar-nav-item" routerLink="/planning" routerLinkActive="active">
         <svg
           width="18"
@@ -33,7 +51,28 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
         Planning
       </a>
 
-      <a class="sidebar-nav-item" routerLink="/reservations" routerLinkActive="active">
+      <a class="sidebar-nav-item" routerLink="/guide" routerLinkActive="active">
+        <svg
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.8"
+          stroke-linecap="round"
+        >
+          <path d="M9 18l-6 3V6l6-3 6 3 6-3v15l-6 3-6-3Z" />
+          <path d="M9 3v15M15 6v15" />
+        </svg>
+        Guide touristique
+      </a>
+
+      <a
+        class="sidebar-nav-item"
+        routerLink="/reservations"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: true }"
+      >
         <svg
           width="18"
           height="18"
@@ -49,6 +88,21 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
         @if (pendingCount() > 0) {
           <span class="badge">{{ pendingCount() }}</span>
         }
+      </a>
+
+      <a class="sidebar-nav-item" routerLink="/reservations/nouvelle" routerLinkActive="active">
+        <svg
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.8"
+          stroke-linecap="round"
+        >
+          <path d="M12 5v14M5 12h14" />
+        </svg>
+        Nouvelle réservation
       </a>
 
       <a class="sidebar-nav-item" routerLink="/clients" routerLinkActive="active">

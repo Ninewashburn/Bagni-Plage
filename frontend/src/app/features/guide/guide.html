@@ -1,0 +1,149 @@
+<div class="page-container guide-page">
+  <section class="guide-hero">
+    <div class="guide-hero-copy">
+      <span class="section-label">Bagni Plage Méditerranée</span>
+      <h1>Réservez votre plage, préparez votre journée.</h1>
+      <p>
+        Choisissez votre site, réservez votre parasol et retrouvez les adresses utiles autour de
+        votre séjour : parkings, restaurants, activités et promenades.
+      </p>
+      <div class="guide-actions">
+        @if (auth.isAuthenticated() && !auth.isConcessionnaire()) {
+        <a routerLink="/reservations/nouvelle" class="btn btn--primary">Réserver un parasol</a>
+        } @else if (auth.isAuthenticated()) {
+        <a routerLink="/dashboard" class="btn btn--primary">Tableau de bord</a>
+        } @else {
+        <a routerLink="/register" class="btn btn--primary">Créer mon compte</a>
+        }
+        <a href="#plages" class="btn btn--outline">Explorer les plages</a>
+        <a
+          href="https://www.google.com/maps?q=Le+Grau-du-Roi"
+          target="_blank"
+          rel="noreferrer"
+          class="btn btn--outline"
+        >
+          Ouvrir dans Google Maps
+        </a>
+      </div>
+    </div>
+
+    <div class="guide-facts">
+      <div>
+        <span>Destination</span>
+        <strong>Méditerranée, Côte d’Azur et Atlantique</strong>
+      </div>
+      <div>
+        <span>Saison</span>
+        <strong>Mai à septembre</strong>
+      </div>
+      <div>
+        <span>Services</span>
+        <strong>Parasol, mobilier, paiement et facture</strong>
+      </div>
+    </div>
+  </section>
+
+  <section class="beach-sites-section" id="plages">
+    <div class="guide-section-head">
+      <span class="section-label">Nos plages</span>
+      <h2>Plusieurs ambiances, une réservation simple</h2>
+    </div>
+
+    <div class="beach-sites-grid">
+      @for (site of beachSites; track site.name) {
+      <article class="beach-site-card">
+        <span>{{ site.location }}</span>
+        <h3>{{ site.name }}</h3>
+        <p>{{ site.mood }}</p>
+        <div class="beach-site-meta">
+          <strong>{{ site.price }}</strong>
+          <span>{{ site.season }}</span>
+        </div>
+        <ul>
+          @for (highlight of site.highlights; track highlight) {
+          <li>{{ highlight }}</li>
+          }
+        </ul>
+      </article>
+      }
+    </div>
+  </section>
+
+  <section class="guide-offers-section" id="offres">
+    <div class="guide-offer-copy">
+      <span class="section-label">Offres</span>
+      <h2>Votre journée de plage dans la poche</h2>
+      <p>
+        Les pass Bagni regroupent réservation, accès plage, mobilier et facture. Le QR code sera
+        disponible depuis votre compte après validation de la réservation.
+      </p>
+      <div class="guide-actions">
+        @if (auth.isAuthenticated()) {
+        <a
+          [routerLink]="auth.isConcessionnaire() ? '/dashboard' : '/profil'"
+          class="btn btn--primary"
+          >Voir mon compte</a
+        >
+        } @else {
+        <a routerLink="/register" class="btn btn--primary">Créer mon compte</a>
+        }
+        <a routerLink="/guide" fragment="plages" class="btn btn--outline">Voir les plages</a>
+      </div>
+    </div>
+
+    <div class="offer-pass-card" aria-label="Aperçu du pass Bagni">
+      <span>Bagni Pass</span>
+      <div class="qr-card">
+        <div class="qr-code" aria-hidden="true">
+          @for (cell of qrCells; track $index) {
+          <span [class.is-dark]="cell"></span>
+          }
+        </div>
+      </div>
+      <strong>Accès plage + mobilier</strong>
+      <small>À présenter à votre arrivée</small>
+    </div>
+  </section>
+
+  <section class="guide-map-section">
+    <div class="guide-map-copy">
+      <span class="section-label">Carte touristique</span>
+      <h2>Autour de la plage</h2>
+      <p>
+        Repérez les parkings, restaurants et activités proches de la plage sélectionnée pour
+        organiser facilement votre arrivée et votre fin de journée.
+      </p>
+    </div>
+
+    <div class="guide-map-shell">
+      <iframe
+        title="Carte Google autour de Bagni Plage"
+        loading="lazy"
+        referrerpolicy="no-referrer-when-downgrade"
+        src="https://www.google.com/maps?q=Le+Grau-du-Roi%2C%20France&output=embed"
+      ></iframe>
+    </div>
+  </section>
+
+  <section class="guide-grid">
+    <div class="guide-section-head">
+      <span class="section-label">Points d'intérêt</span>
+      <h2>Votre mini guide de journée</h2>
+    </div>
+
+    @for (place of places; track place.name) {
+    <article class="guide-place-card">
+      <div class="guide-place-top">
+        <span class="guide-place-type">{{ place.type }}</span>
+        <span class="guide-place-tag">{{ place.tag }}</span>
+      </div>
+      <h3>{{ place.name }}</h3>
+      <p>{{ place.description }}</p>
+      <div class="guide-place-meta">
+        <span>{{ place.distance }}</span>
+        <span>{{ place.walk }} à pied</span>
+      </div>
+    </article>
+    }
+  </section>
+</div>

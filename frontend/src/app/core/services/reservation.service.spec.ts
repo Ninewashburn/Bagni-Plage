@@ -5,7 +5,7 @@ import { provideRouter } from '@angular/router';
 import { ReservationService } from './reservation.service';
 import { Reservation } from '../models/reservation.model';
 
-const BASE = 'http://localhost:8080/api';
+const BASE = '/api';
 
 const makeReservation = (id: number): Reservation => ({
   id,
@@ -48,6 +48,15 @@ describe('ReservationService', () => {
     req.flush({ content: [], totalElements: 0 });
   });
 
+  it('getAll can filter by statut', () => {
+    service.getAll(1, 10, 'VALIDEE').subscribe();
+    const req = httpMock.expectOne(r => r.url === `${BASE}/reservations`);
+    expect(req.request.params.get('page')).toBe('1');
+    expect(req.request.params.get('size')).toBe('10');
+    expect(req.request.params.get('statut')).toBe('VALIDEE');
+    req.flush({ content: [], totalElements: 0 });
+  });
+
   it('getPending calls GET /reservations/pending', () => {
     service.getPending(0, 5).subscribe();
     const req = httpMock.expectOne(r => r.url === `${BASE}/reservations/pending`);
@@ -70,9 +79,10 @@ describe('ReservationService', () => {
   });
 
   it('refuse calls PATCH /reservations/:id/refuse', () => {
-    service.refuse(7).subscribe();
+    service.refuse(7, 'Indisponible').subscribe();
     const req = httpMock.expectOne(`${BASE}/reservations/7/refuse`);
     expect(req.request.method).toBe('PATCH');
+    expect(req.request.body).toEqual({ motif: 'Indisponible' });
     req.flush(makeReservation(7));
   });
 
@@ -90,7 +100,6 @@ describe('ReservationService', () => {
       equipement: 'UN_LIT' as const,
       dateDebut: '2026-07-01',
       dateFin: '2026-07-07',
-      montantPaye: 350,
     };
     service.create(payload).subscribe();
     const req = httpMock.expectOne(`${BASE}/reservations`);

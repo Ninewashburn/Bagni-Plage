@@ -7,6 +7,7 @@ import {
   signal,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { RouterLink } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -30,6 +31,7 @@ import { AvatarComponent } from '../../shared/avatar';
     MatSelectModule,
     MatProgressSpinner,
     AvatarComponent,
+    RouterLink,
   ],
   templateUrl: './profil.html',
 })
@@ -86,7 +88,8 @@ export class ProfilComponent implements OnInit {
       .updateMe(this.form.getRawValue())
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: () => {
+        next: response => {
+          this.auth.updateIdentity(response);
           this.loading.set(false);
           this.saved.set(true);
           this.snackBar.open('Profil mis à jour', 'Fermer', { duration: 3000 });

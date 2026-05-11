@@ -1,13 +1,19 @@
-import { HttpInterceptorFn } from '@angular/common/http';
+import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
+import { catchError, throwError } from 'rxjs';
 import { AuthService } from '../services/auth.service';
 
 export const jwtInterceptor: HttpInterceptorFn = (req, next) => {
-  const token = inject(AuthService).token();
+  const auth = inject(AuthService);
+  const token = auth.token();
+  const authReq = token ? req.clone({ setHeaders: { Authorization: `Bearer ${token}` } }) : req;
 
-  if (token) {
-    return next(req.clone({ setHeaders: { Authorization: `Bearer ${token}` } }));
-  }
-
-  return next(req);
+  return next(authReq).pipe(
+    catchError(error => {
+      if (error instanceof HttpErrorResponse && error.status === 401) {
+        auth.clearSession();
+      }
+      return throwError(() => error);
+    }),
+  );
 };

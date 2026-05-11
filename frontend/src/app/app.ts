@@ -2,13 +2,14 @@ import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { HeaderComponent } from './layout/header/header';
 import { SidebarComponent } from './layout/sidebar/sidebar';
+import { FooterComponent } from './layout/footer/footer';
 import { AuthService } from './core/services/auth.service';
 
 @Component({
   selector: 'app-root',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterOutlet, HeaderComponent, SidebarComponent],
+  imports: [RouterOutlet, HeaderComponent, SidebarComponent, FooterComponent],
   template: `
     @if (auth.isAuthenticated() && auth.isConcessionnaire()) {
       <div class="app-shell">
@@ -25,6 +26,7 @@ import { AuthService } from './core/services/auth.service';
         <div class="app-content">
           <router-outlet />
         </div>
+        <app-footer />
       </div>
     }
   `,

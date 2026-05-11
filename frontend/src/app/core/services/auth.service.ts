@@ -3,10 +3,11 @@ import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Observable, tap } from 'rxjs';
 import { LoginRequest, LoginResponse, RegisterRequest } from '../models/auth.model';
+import { API_BASE_URL } from '../api-url';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private readonly apiUrl = 'http://localhost:8080/api';
+  private readonly apiUrl = inject(API_BASE_URL);
   private readonly TOKEN_KEY = 'jwt_token';
   private readonly ROLE_KEY = 'user_role';
   private readonly NOM_KEY = 'user_nom';
@@ -22,7 +23,10 @@ export class AuthService {
   private _prenom = signal<string | null>(localStorage.getItem(this.PRENOM_KEY));
   private _email = signal<string | null>(localStorage.getItem(this.EMAIL_KEY));
 
-  readonly isAuthenticated = computed(() => !!this._token());
+  readonly isAuthenticated = computed(() => {
+    const token = this._token();
+    return !!token && !this.isJwtExpired(token);
+  });
   readonly token = computed(() => this._token());
   readonly role = computed(() => this._role());
   readonly nom = computed(() => this._nom());
@@ -30,6 +34,13 @@ export class AuthService {
   readonly email = computed(() => this._email());
   readonly fullName = computed(() => `${this._prenom()} ${this._nom()}`);
   readonly isConcessionnaire = computed(() => this._role() === 'ROLE_CONCESSIONNAIRE');
+
+  constructor() {
+    const token = this._token();
+    if (token && this.isJwtExpired(token)) {
+      this.clearSession();
+    }
+  }
 
   storeSession(response: LoginResponse): void {
     localStorage.setItem(this.TOKEN_KEY, response.token);
@@ -51,10 +62,16 @@ export class AuthService {
   }
 
   register(request: RegisterRequest): Observable<LoginResponse> {
-    return this.http.post<LoginResponse>(`${this.apiUrl}/auth/register`, request);
+    return this.http
+      .post<LoginResponse>(`${this.apiUrl}/auth/register`, request)
+      .pipe(tap(response => this.storeSession(response)));
   }
 
-  logout(): void {
+  updateIdentity(response: LoginResponse): void {
+    this.storeSession(response);
+  }
+
+  clearSession(): void {
     [this.TOKEN_KEY, this.ROLE_KEY, this.NOM_KEY, this.PRENOM_KEY, this.EMAIL_KEY].forEach(k =>
       localStorage.removeItem(k),
     );
@@ -63,6 +80,22 @@ export class AuthService {
     this._nom.set(null);
     this._prenom.set(null);
     this._email.set(null);
+  }
+
+  logout(): void {
+    this.clearSession();
     this.router.navigate(['/login']);
+  }
+
+  private isJwtExpired(token: string): boolean {
+    try {
+      const [, payload] = token.split('.');
+      if (!payload) return true;
+      const normalized = payload.replace(/-/g, '+').replace(/_/g, '/');
+      const decoded = JSON.parse(atob(normalized)) as { exp?: number };
+      return typeof decoded.exp === 'number' && decoded.exp * 1000 <= Date.now();
+    } catch {
+      return true;
+    }
   }
 }

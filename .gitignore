@@ -39,9 +39,10 @@ Thumbs.db
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-package-lock.json
 pnpm-lock.yaml
 
 # Business case files to exclude
 BusinessCaseCDA2022.pdf
 CLAUDE.md
+BAGNI_PLAGE_ROADMAP_IDE.md
+BAGNI_PLAGE_AMELIORATIONS_UX_IDE.md

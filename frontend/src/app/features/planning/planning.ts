@@ -9,6 +9,7 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { DatePipe, CurrencyPipe, TitleCasePipe } from '@angular/common';
+import { HttpErrorResponse } from '@angular/common/http';
 import { RouterLink } from '@angular/router';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -131,6 +132,8 @@ export class PlanningComponent implements OnInit {
   }
 
   valider(res: Reservation): void {
+    if (!window.confirm('Valider cette réservation ?')) return;
+
     this.reservationService
       .validate(res.id)
       .pipe(takeUntilDestroyed(this.destroyRef))
@@ -140,13 +143,19 @@ export class PlanningComponent implements OnInit {
           this.selectedRes.set(null);
           this.snackBar.open(`Réservation validée`, 'Fermer', { duration: 3000 });
         },
-        error: () => this.snackBar.open('Erreur', 'Fermer', { duration: 3000 }),
+        error: error =>
+          this.snackBar.open(this.errorMessage(error, 'Erreur lors de la validation'), 'Fermer', {
+            duration: 4000,
+          }),
       });
   }
 
   refuser(res: Reservation): void {
+    const motif = window.prompt('Motif du refus (optionnel)');
+    if (motif === null) return;
+
     this.reservationService
-      .refuse(res.id)
+      .refuse(res.id, motif)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: () => {
@@ -154,7 +163,10 @@ export class PlanningComponent implements OnInit {
           this.selectedRes.set(null);
           this.snackBar.open(`Réservation refusée`, 'Fermer', { duration: 3000 });
         },
-        error: () => this.snackBar.open('Erreur', 'Fermer', { duration: 3000 }),
+        error: error =>
+          this.snackBar.open(this.errorMessage(error, 'Erreur lors du refus'), 'Fermer', {
+            duration: 4000,
+          }),
       });
   }
 
@@ -193,6 +205,17 @@ export class PlanningComponent implements OnInit {
   }
 
   private toIsoDate(d: Date): string {
-    return d.toISOString().split('T')[0];
+    return [
+      d.getFullYear(),
+      String(d.getMonth() + 1).padStart(2, '0'),
+      String(d.getDate()).padStart(2, '0'),
+    ].join('-');
+  }
+
+  private errorMessage(error: unknown, fallback: string): string {
+    if (error instanceof HttpErrorResponse && error.error?.detail) {
+      return error.error.detail;
+    }
+    return fallback;
   }
 }

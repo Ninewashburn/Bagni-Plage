@@ -27,4 +27,16 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
     """)
     List<Reservation> findForPlanning(@Param("dateDebut") LocalDate dateDebut,
                                       @Param("dateFin") LocalDate dateFin);
+
+    @Query("""
+        SELECT DISTINCT p.id FROM Reservation r JOIN r.parasols p
+        WHERE r.statut <> :statutRefuse
+          AND p.id IN :parasolIds
+          AND r.dateDebut <= :dateFin
+          AND r.dateFin >= :dateDebut
+    """)
+    List<Long> findConflictingParasolIds(@Param("parasolIds") List<Long> parasolIds,
+                                         @Param("dateDebut") LocalDate dateDebut,
+                                         @Param("dateFin") LocalDate dateFin,
+                                         @Param("statutRefuse") Statut statutRefuse);
 }

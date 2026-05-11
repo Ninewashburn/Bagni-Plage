@@ -10,12 +10,20 @@ export const authGuard: CanActivateFn = () => {
   return inject(Router).createUrlTree(['/login']);
 };
 
+export const guestOnlyGuard: CanActivateFn = () => {
+  const authService = inject(AuthService);
+
+  if (!authService.isAuthenticated()) return true;
+
+  return inject(Router).createUrlTree([authService.isConcessionnaire() ? '/dashboard' : '/profil']);
+};
+
 export const concessionnaireGuard: CanActivateFn = () => {
   const authService = inject(AuthService);
 
   if (authService.isConcessionnaire()) return true;
 
-  return inject(Router).createUrlTree(['/planning']);
+  return inject(Router).createUrlTree(['/reservations']);
 };
 
 export const clientGuard: CanActivateFn = () => {
@@ -23,5 +31,5 @@ export const clientGuard: CanActivateFn = () => {
 
   if (!authService.isConcessionnaire()) return true;
 
-  return inject(Router).createUrlTree(['/planning']);
+  return inject(Router).createUrlTree(['/dashboard']);
 };

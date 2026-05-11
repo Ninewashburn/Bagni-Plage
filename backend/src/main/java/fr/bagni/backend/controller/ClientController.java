@@ -1,7 +1,9 @@
 package fr.bagni.backend.controller;
 
 import fr.bagni.backend.dto.request.ClientUpdateRequest;
+import fr.bagni.backend.dto.response.AuthResponse;
 import fr.bagni.backend.dto.response.ClientResponse;
+import fr.bagni.backend.service.AuthService;
 import fr.bagni.backend.service.ClientService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 public class ClientController {
 
     private final ClientService clientService;
+    private final AuthService authService;
 
     @GetMapping
     @PreAuthorize("hasRole('CONCESSIONNAIRE')")
@@ -44,10 +47,12 @@ public class ClientController {
 
     @PatchMapping("/me")
     @PreAuthorize("hasRole('CLIENT')")
-    public ClientResponse updateMe(@Valid @RequestBody ClientUpdateRequest request,
-                                   @AuthenticationPrincipal UserDetails userDetails) {
+    public AuthResponse updateMe(@Valid @RequestBody ClientUpdateRequest request,
+                                 @AuthenticationPrincipal UserDetails userDetails) {
         var client = clientService.findByEmailOrThrow(userDetails.getUsername());
-        return clientService.update(client.getId(), request);
+        clientService.update(client.getId(), request);
+        var updatedClient = clientService.findByEmailOrThrow(request.email());
+        return authService.buildAuthResponse(updatedClient);
     }
 
     @DeleteMapping("/{id}")

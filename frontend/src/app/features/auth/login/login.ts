@@ -68,7 +68,10 @@ export class LoginComponent {
     this.error.set(null);
 
     this.authService.login(this.form.getRawValue()).subscribe({
-      next: () => this.router.navigate(['/planning']),
+      next: () =>
+        this.router.navigate([
+          this.authService.isConcessionnaire() ? '/dashboard' : '/reservations',
+        ]),
       error: () => {
         this.error.set('Email ou mot de passe incorrect.');
         this.loading.set(false);

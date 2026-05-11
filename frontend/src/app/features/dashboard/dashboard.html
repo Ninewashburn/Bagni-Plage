@@ -1,0 +1,100 @@
+<div class="page-container dashboard-page">
+  <section class="dashboard-hero">
+    <div>
+      <p class="section-label">Bagni Plage</p>
+      <h1 class="page-title">Pilotage de la concession</h1>
+      <p class="dashboard-subtitle">
+        Vue opérationnelle des demandes, de l'occupation et du chiffre d'affaires validé.
+      </p>
+    </div>
+    <a routerLink="/reservations" class="btn btn--primary">Traiter les demandes</a>
+  </section>
+
+  @if (loading()) {
+  <mat-progress-bar mode="indeterminate" />
+  }
+
+  <section class="dashboard-kpis">
+    <article class="dashboard-kpi card">
+      <span>Demandes en attente</span>
+      <strong>{{ pending().length }}</strong>
+      <small>À valider ou refuser</small>
+    </article>
+    <article class="dashboard-kpi card">
+      <span>Réservations validées</span>
+      <strong>{{ confirmed().length }}</strong>
+      <small>Saison en cours</small>
+    </article>
+    <article class="dashboard-kpi card">
+      <span>Occupation</span>
+      <strong>{{ occupancy() }}%</strong>
+      <small>{{ parasolsTotal() }} parasols suivis</small>
+    </article>
+    <article class="dashboard-kpi card">
+      <span>CA validé</span>
+      <strong>{{ revenue() | currency: 'EUR' : 'symbol' : '1.0-0' : 'fr-FR' }}</strong>
+      <small>{{ clientsTotal() }} clients enregistrés</small>
+    </article>
+  </section>
+
+  <section class="dashboard-grid">
+    <article class="dashboard-panel card">
+      <div class="dashboard-panel-head">
+        <div>
+          <p class="section-label">Priorité</p>
+          <h2>Demandes à traiter</h2>
+        </div>
+        <a routerLink="/reservations" class="btn btn--outline btn--sm">Voir tout</a>
+      </div>
+
+      @if (pending().length) {
+      <div class="dashboard-list">
+        @for (reservation of pending().slice(0, 5); track reservation.id) {
+        <a class="dashboard-row" routerLink="/reservations">
+          <app-avatar [initials]="initials(reservation)" [size]="36" color="var(--primary)" />
+          <div class="dashboard-row-main">
+            <strong>{{ reservation.client.prenom }} {{ reservation.client.nom }}</strong>
+            <span>
+              {{ reservation.dateDebut | date: 'dd MMM' : '' : 'fr-FR' }} - {{ reservation.dateFin |
+              date: 'dd MMM yyyy' : '' : 'fr-FR' }}
+            </span>
+          </div>
+          <span class="dashboard-row-meta">{{ formatParasols(reservation) }}</span>
+        </a>
+        }
+      </div>
+      } @else {
+      <p class="empty-state">Aucune demande en attente.</p>
+      }
+    </article>
+
+    <article class="dashboard-panel card">
+      <div class="dashboard-panel-head">
+        <div>
+          <p class="section-label">Planning</p>
+          <h2>Dernières réservations</h2>
+        </div>
+        <a routerLink="/planning" class="btn btn--outline btn--sm">Ouvrir</a>
+      </div>
+
+      <div class="dashboard-list">
+        @for (reservation of reservations().slice(0, 6); track reservation.id) {
+        <div class="dashboard-row dashboard-row--static">
+          <app-tag [variant]="statutVariant(reservation.statut)">
+            {{ reservation.statut }}
+          </app-tag>
+          <div class="dashboard-row-main">
+            <strong>{{ reservation.client.prenom }} {{ reservation.client.nom }}</strong>
+            <span>{{ formatParasols(reservation) }}</span>
+          </div>
+          <span class="dashboard-row-meta">
+            {{ reservation.montantPaye | currency: 'EUR' : 'symbol' : '1.0-0' : 'fr-FR' }}
+          </span>
+        </div>
+        } @empty {
+        <p class="empty-state">Aucune réservation pour le moment.</p>
+        }
+      </div>
+    </article>
+  </section>
+</div>

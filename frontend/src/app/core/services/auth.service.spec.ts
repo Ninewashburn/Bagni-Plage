@@ -10,8 +10,10 @@ class DummyComponent {}
 
 const loginRoute = { path: 'login', component: DummyComponent };
 
+const futureToken = `header.${btoa(JSON.stringify({ exp: 4_102_444_800 }))}.signature`;
+
 const mockResponse: LoginResponse = {
-  token: 'tok.abc.xyz',
+  token: futureToken,
   role: 'ROLE_CLIENT',
   nom: 'Meynadier',
   prenom: 'Renaud',
@@ -38,12 +40,12 @@ describe('AuthService', () => {
     service.storeSession(mockResponse);
 
     expect(service.isAuthenticated()).toBe(true);
-    expect(service.token()).toBe('tok.abc.xyz');
+    expect(service.token()).toBe(futureToken);
     expect(service.nom()).toBe('Meynadier');
     expect(service.prenom()).toBe('Renaud');
     expect(service.email()).toBe('renaud@example.com');
     expect(service.fullName()).toBe('Renaud Meynadier');
-    expect(localStorage.getItem('jwt_token')).toBe('tok.abc.xyz');
+    expect(localStorage.getItem('jwt_token')).toBe(futureToken);
   });
 
   it('isConcessionnaire returns false for ROLE_CLIENT', () => {
@@ -67,7 +69,7 @@ describe('AuthService', () => {
   });
 
   it('restores session from localStorage on init', () => {
-    localStorage.setItem('jwt_token', 'existing.token');
+    localStorage.setItem('jwt_token', futureToken);
     localStorage.setItem('user_nom', 'Dupont');
     localStorage.setItem('user_prenom', 'Jean');
     localStorage.setItem('user_email', 'jean@example.com');
@@ -81,5 +83,20 @@ describe('AuthService', () => {
 
     expect(fresh.isAuthenticated()).toBe(true);
     expect(fresh.nom()).toBe('Dupont');
+  });
+
+  it('clears an expired restored session', () => {
+    const expiredToken = `header.${btoa(JSON.stringify({ exp: 1 }))}.signature`;
+    localStorage.setItem('jwt_token', expiredToken);
+    localStorage.setItem('user_role', 'ROLE_CLIENT');
+
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [provideHttpClient(), provideRouter([loginRoute])],
+    });
+    const fresh = TestBed.inject(AuthService);
+
+    expect(fresh.isAuthenticated()).toBe(false);
+    expect(localStorage.getItem('jwt_token')).toBeNull();
   });
 });

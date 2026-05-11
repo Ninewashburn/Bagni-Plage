@@ -1,3 +1,42 @@
-<footer>
-  <span>© {{ year }} Bagni Plage — Tous droits réservés</span>
+<footer class="app-footer">
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <strong>Bagni Plage</strong>
+      <span
+        >Réservez votre journée de plage et retrouvez les adresses utiles autour du littoral.</span
+      >
+    </div>
+
+    <div class="footer-columns">
+      <section>
+        <h2>Explorer</h2>
+        <a routerLink="/guide" fragment="plages">Nos plages</a>
+        <a routerLink="/guide">Guide local</a>
+        <a routerLink="/guide">Autour de la plage</a>
+      </section>
+
+      <section>
+        <h2>Réserver</h2>
+        <a routerLink="/reservations/nouvelle">Choisir un parasol</a>
+        @if (auth.isAuthenticated()) {
+        <a routerLink="/reservations">Mes réservations</a>
+        } @else {
+        <a routerLink="/login">Connexion</a>
+        <a routerLink="/register">Créer un compte</a>
+        }
+      </section>
+
+      <section>
+        <h2>Informations</h2>
+        <span>Saison : mai à septembre</span>
+        <span>Accès, parking et activités</span>
+        <span>Factures disponibles après paiement</span>
+      </section>
+    </div>
+  </div>
+
+  <div class="footer-bottom">
+    <span>© {{ year }} Bagni Plage</span>
+    <span>Conditions de réservation · Confidentialité · Contact</span>
+  </div>
 </footer>

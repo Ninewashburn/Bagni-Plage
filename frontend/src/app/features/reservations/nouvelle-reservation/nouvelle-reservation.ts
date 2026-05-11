@@ -26,6 +26,9 @@ import { ParasolService } from '../../../core/services/parasol.service';
 import { ReservationService } from '../../../core/services/reservation.service';
 import { FilePlageDetail } from '../../../core/models/parasol.model';
 import { Equipement } from '../../../core/models/reservation.model';
+import { AuthService } from '../../../core/services/auth.service';
+import { ClientService } from '../../../core/services/client.service';
+import { Client } from '../../../core/models/client.model';
 
 @Component({
   selector: 'app-nouvelle-reservation',
@@ -53,13 +56,17 @@ export class NouvelleReservationComponent implements OnInit {
   private fb = inject(FormBuilder);
   private parasolService = inject(ParasolService);
   private reservationService = inject(ReservationService);
+  private clientService = inject(ClientService);
+  protected auth = inject(AuthService);
   private router = inject(Router);
   private destroyRef = inject(DestroyRef);
   private snackBar = inject(MatSnackBar);
 
   files = signal<FilePlageDetail[]>([]);
+  clients = signal<Client[]>([]);
   disponibleIds = signal<Set<number>>(new Set());
   loadingFiles = signal(false);
+  loadingClients = signal(false);
   loadingDisponibles = signal(false);
   loadingCreate = signal(false);
   paymentSimulated = signal(false);
@@ -67,6 +74,10 @@ export class NouvelleReservationComponent implements OnInit {
   dateForm = this.fb.group({
     dateDebut: [null as Date | null, Validators.required],
     dateFin: [null as Date | null, Validators.required],
+  });
+
+  clientForm = this.fb.group({
+    clientId: [null as number | null, [Validators.required, Validators.min(1)]],
   });
 
   parasolForm = this.fb.group({
@@ -86,7 +97,17 @@ export class NouvelleReservationComponent implements OnInit {
     initialValue: this.parasolForm.value,
   });
 
-  readonly minDate = new Date();
+  private equipementValue = toSignal(this.equipementForm.valueChanges, {
+    initialValue: this.equipementForm.value,
+  });
+
+  private readonly seasonYear =
+    new Date() > new Date(new Date().getFullYear(), 8, 15)
+      ? new Date().getFullYear() + 1
+      : new Date().getFullYear();
+  readonly seasonStart = new Date(this.seasonYear, 4, 1);
+  readonly seasonEnd = new Date(this.seasonYear, 8, 15);
+  readonly minDate = new Date() > this.seasonStart ? new Date() : this.seasonStart;
 
   readonly nbJours = computed(() => {
     const { dateDebut, dateFin } = this.dateValues();
@@ -95,18 +116,17 @@ export class NouvelleReservationComponent implements OnInit {
     return Math.max(1, Math.floor(diff / 86400000) + 1);
   });
 
-  readonly sortedFiles = computed(() => [...this.files()].sort((a, b) => a.numero - b.numero));
-
-  readonly gridRows = computed(() => {
-    const sorted = this.sortedFiles();
-    return Array.from({ length: 36 }, (_, i) => ({
-      rowNum: i + 1,
-      cells: sorted.map(file => ({
-        file,
-        parasol: file.parasols.find(p => p.numeroEmplacement === i + 1) ?? null,
-      })),
-    }));
+  readonly datesOutOfOrder = computed(() => {
+    const { dateDebut, dateFin } = this.dateValues();
+    return !!dateDebut && !!dateFin && (dateFin as Date).getTime() < (dateDebut as Date).getTime();
   });
+
+  readonly sortedFiles = computed(() => [...this.files()].sort((a, b) => a.numero - b.numero));
+  readonly emplNums = Array.from({ length: 36 }, (_, i) => i + 1);
+
+  sortedParasols(file: FilePlageDetail): typeof file.parasols {
+    return [...file.parasols].sort((a, b) => a.numeroEmplacement - b.numeroEmplacement);
+  }
 
   readonly selectedParasolId = computed(() => this.parasolValue().parasolId ?? null);
 
@@ -120,21 +140,39 @@ export class NouvelleReservationComponent implements OnInit {
     return null;
   });
 
+  readonly selectedEquipement = computed(() => this.equipementValue().equipement ?? '');
+
+  readonly equipmentExtra = computed(() => this.extraDailyPrice(this.selectedEquipement()));
+
   readonly totalPrice = computed(() => {
     const p = this.selectedParasol();
     if (!p) return 0;
-    return p.prixJournalier * this.nbJours();
+    return (p.prixJournalier + this.equipmentExtra()) * this.nbJours();
   });
 
-  readonly equipements: { value: Equipement; label: string }[] = [
-    { value: 'UN_LIT', label: '1 lit' },
-    { value: 'DEUX_LITS', label: '2 lits' },
-    { value: 'UN_FAUTEUIL', label: '1 fauteuil de réalisateur' },
-    { value: 'FAUTEUIL_ET_LIT', label: '1 fauteuil + 1 lit' },
-    { value: 'DEUX_FAUTEUILS', label: '2 fauteuils de réalisateur' },
+  readonly equipements: { value: Equipement; label: string; extra: number }[] = [
+    { value: 'UN_LIT', label: '1 lit inclus', extra: 0 },
+    { value: 'DEUX_LITS', label: '2 lits', extra: 8 },
+    { value: 'UN_FAUTEUIL', label: '1 fauteuil de réalisateur', extra: 4 },
+    { value: 'FAUTEUIL_ET_LIT', label: '1 fauteuil + 1 lit', extra: 6 },
+    { value: 'DEUX_FAUTEUILS', label: '2 fauteuils de réalisateur', extra: 8 },
   ];
 
   ngOnInit(): void {
+    if (this.auth.isConcessionnaire()) {
+      this.loadingClients.set(true);
+      this.clientService
+        .getAll(0, 500)
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe({
+          next: page => {
+            this.clients.set(page.content);
+            this.loadingClients.set(false);
+          },
+          error: () => this.loadingClients.set(false),
+        });
+    }
+
     this.loadingFiles.set(true);
     this.parasolService
       .getFiles()
@@ -150,6 +188,12 @@ export class NouvelleReservationComponent implements OnInit {
 
   onDatesNext(): void {
     if (this.dateForm.invalid) return;
+    if (this.datesOutOfOrder()) {
+      this.snackBar.open('La date de départ doit être après la date d’arrivée.', 'Fermer', {
+        duration: 3500,
+      });
+      return;
+    }
     this.loadDisponibles();
   }
 
@@ -192,6 +236,7 @@ export class NouvelleReservationComponent implements OnInit {
     const { dateDebut, dateFin } = this.dateForm.value;
     const { parasolId } = this.parasolForm.value;
     const { equipement, remarques } = this.equipementForm.value;
+    const { clientId } = this.clientForm.value;
 
     this.reservationService
       .create({
@@ -199,8 +244,8 @@ export class NouvelleReservationComponent implements OnInit {
         equipement: equipement as Equipement,
         dateDebut: this.toIsoDate(dateDebut as Date),
         dateFin: this.toIsoDate(dateFin as Date),
-        montantPaye: this.totalPrice(),
         remarques: remarques || undefined,
+        clientId: this.auth.isConcessionnaire() ? (clientId as number) : undefined,
       })
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
@@ -217,7 +262,29 @@ export class NouvelleReservationComponent implements OnInit {
       });
   }
 
+  equipLabel(eq: string): string {
+    return (
+      (
+        {
+          UN_LIT: '1 lit inclus',
+          DEUX_LITS: '2 lits',
+          UN_FAUTEUIL: '1 fauteuil de réalisateur',
+          FAUTEUIL_ET_LIT: '1 fauteuil + 1 lit',
+          DEUX_FAUTEUILS: '2 fauteuils de réalisateur',
+        } as Record<string, string>
+      )[eq] ?? eq
+    );
+  }
+
+  extraDailyPrice(eq: string): number {
+    return this.equipements.find(e => e.value === eq)?.extra ?? 0;
+  }
+
   private toIsoDate(d: Date): string {
-    return d.toISOString().split('T')[0];
+    return [
+      d.getFullYear(),
+      String(d.getMonth() + 1).padStart(2, '0'),
+      String(d.getDate()).padStart(2, '0'),
+    ].join('-');
   }
 }
