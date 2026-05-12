@@ -61,7 +61,7 @@
       </article>
       <article>
         <span>3</span>
-        <h3>Présentez votre QR Pass</h3>
+        <h3>Présentez votre Bagni Pass</h3>
         <p>Retrouvez votre réservation, votre facture et votre accès depuis votre compte.</p>
       </article>
     </div>
@@ -157,18 +157,7 @@
     </div>
 
     @for (place of places; track place.name) {
-    <article class="guide-place-card">
-      <div class="guide-place-top">
-        <span class="guide-place-type">{{ place.type }}</span>
-        <span class="guide-place-tag">{{ place.tag }}</span>
-      </div>
-      <h3>{{ place.name }}</h3>
-      <p>{{ place.description }}</p>
-      <div class="guide-place-meta">
-        <span>{{ place.distance }}</span>
-        <span>{{ place.walk }} à pied</span>
-      </div>
-    </article>
+    <app-guide-place-card [place]="place" />
     }
   </section>
 </div>

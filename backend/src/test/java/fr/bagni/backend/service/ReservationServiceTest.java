@@ -18,6 +18,7 @@ import fr.bagni.backend.repository.ConcessionnaireRepository;
 import fr.bagni.backend.repository.ParasolRepository;
 import fr.bagni.backend.repository.ReservationRepository;
 import org.junit.jupiter.api.Test;
+import org.springframework.lang.NonNull;
 
 import java.math.BigDecimal;
 import java.nio.charset.Charset;
@@ -29,6 +30,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.notNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -56,26 +58,29 @@ class ReservationServiceTest {
 
     @Test
     void createRefuseUnParasolDejaReserveSurLaPeriode() {
+        var parasolIds = ids(10L);
+        var dateDebut = date(2026, 7, 1);
+        var dateFin = date(2026, 7, 4);
         var request = new ReservationRequest(
-                List.of(10L),
+                parasolIds,
                 Equipement.UN_LIT,
-                LocalDate.of(2026, 7, 1),
-                LocalDate.of(2026, 7, 4),
+                dateDebut,
+                dateFin,
                 null,
                 null
         );
 
         when(clientRepository.findByEmail("client@bagni.test")).thenReturn(Optional.of(new Client()));
-        when(parasolRepository.findAllByIdForUpdate(List.of(10L))).thenReturn(List.of(parasol(10L)));
+        when(parasolRepository.findAllByIdForUpdate(parasolIds)).thenReturn(List.of(parasol(10L)));
         when(reservationRepository.findConflictingParasolIds(
-                List.of(10L), request.dateDebut(), request.dateFin(), Statut.REFUSEE
+                parasolIds, dateDebut, dateFin, Statut.REFUSEE
         )).thenReturn(List.of(10L));
 
         assertThatThrownBy(() -> service.create(request, "client@bagni.test"))
                 .isInstanceOf(BusinessException.class)
                 .hasMessageContaining("deja reserves");
 
-        verify(reservationRepository, never()).save(any());
+        verify(reservationRepository, never()).save(anyReservation());
     }
 
     @Test
@@ -85,28 +90,31 @@ class ReservationServiceTest {
         client.setEmail("client@bagni.test");
         client.setDateInscription(LocalDate.of(2026, 1, 1));
 
+        var parasolIds = ids(10L);
+        var dateDebut = date(2026, 5, 10);
+        var dateFin = date(2026, 5, 11);
         var request = new ReservationRequest(
-                List.of(10L),
+                parasolIds,
                 Equipement.DEUX_LITS,
-                LocalDate.of(2026, 5, 10),
-                LocalDate.of(2026, 5, 11),
+                dateDebut,
+                dateFin,
                 null,
                 null
         );
 
         when(clientRepository.findByEmail("client@bagni.test")).thenReturn(Optional.of(client));
-        when(parasolRepository.findAllByIdForUpdate(List.of(10L))).thenReturn(List.of(parasol(10L)));
+        when(parasolRepository.findAllByIdForUpdate(parasolIds)).thenReturn(List.of(parasol(10L)));
         when(reservationRepository.findConflictingParasolIds(
-                List.of(10L), request.dateDebut(), request.dateFin(), Statut.REFUSEE
+                parasolIds, dateDebut, dateFin, Statut.REFUSEE
         )).thenReturn(List.of());
         when(tarificationService.calculerMontant(
                 eq(client),
                 any(),
                 eq(Equipement.DEUX_LITS),
-                eq(request.dateDebut()),
-                eq(request.dateFin())
+                eq(dateDebut),
+                eq(dateFin)
         )).thenReturn(new BigDecimal("106.00"));
-        when(reservationRepository.save(any(Reservation.class))).thenAnswer(invocation -> {
+        when(reservationRepository.save(anyReservation())).thenAnswer(invocation -> {
             Reservation reservation = invocation.getArgument(0);
             reservation.setId(42L);
             return reservation;
@@ -138,7 +146,7 @@ class ReservationServiceTest {
 
         when(reservationRepository.findById(99L)).thenReturn(Optional.of(reservation));
         when(concessionnaireRepository.findByEmail("admin@bagni.test")).thenReturn(Optional.of(concessionnaire));
-        when(reservationRepository.save(any(Reservation.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(reservationRepository.save(anyReservation())).thenAnswer(invocation -> invocation.getArgument(0));
         stubResponses();
 
         var response = service.refuse(99L, "admin@bagni.test", "Hors capacite");
@@ -148,6 +156,35 @@ class ReservationServiceTest {
         assertThat(response.remboursementReference()).startsWith("REF-SIM-");
         assertThat(response.remboursementStatut()).isEqualTo("REMBOURSE_SIMULE");
         assertThat(response.dateTraitement()).isNotNull();
+    }
+
+    @Test
+    void validateGenereUnTicketBagniPass() {
+        var reservation = Reservation.builder()
+                .client(new Client())
+                .parasols(List.of(parasol(7L)))
+                .equipement(Equipement.UN_LIT)
+                .dateDebut(LocalDate.of(2026, 7, 1))
+                .dateFin(LocalDate.of(2026, 7, 2))
+                .montantPaye(new BigDecimal("80.00"))
+                .statut(Statut.EN_ATTENTE)
+                .build();
+        reservation.setId(101L);
+
+        var concessionnaire = new Concessionnaire();
+        concessionnaire.setEmail("admin@bagni.test");
+
+        when(reservationRepository.findById(101L)).thenReturn(Optional.of(reservation));
+        when(concessionnaireRepository.findByEmail("admin@bagni.test")).thenReturn(Optional.of(concessionnaire));
+        when(reservationRepository.save(anyReservation())).thenAnswer(invocation -> invocation.getArgument(0));
+        stubResponses();
+
+        var response = service.validate(101L, "admin@bagni.test");
+
+        assertThat(response.statut()).isEqualTo(Statut.VALIDEE);
+        assertThat(response.ticketCode()).startsWith("BAGNI-101-");
+        assertThat(response.ticketStatut()).isEqualTo("ACTIF");
+        assertThat(response.ticketEmisLe()).isNotNull();
     }
 
     @Test
@@ -204,5 +241,20 @@ class ReservationServiceTest {
         when(parasolService.toParasolResponse(any(Parasol.class))).thenReturn(
                 new ParasolResponse(7L, 1, 1, "1F1")
         );
+    }
+
+    @SuppressWarnings("null")
+    private static @NonNull Reservation anyReservation() {
+        return notNull(Reservation.class);
+    }
+
+    @SuppressWarnings("null")
+    private static @NonNull LocalDate date(int year, int month, int dayOfMonth) {
+        return LocalDate.of(year, month, dayOfMonth);
+    }
+
+    @SuppressWarnings("null")
+    private static @NonNull List<Long> ids(Long id) {
+        return List.of(id);
     }
 }

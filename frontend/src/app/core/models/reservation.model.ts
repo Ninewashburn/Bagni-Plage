@@ -41,6 +41,10 @@ export interface Reservation {
   paiementStatut?: string;
   remboursementReference?: string;
   remboursementStatut?: string;
+  ticketCode?: string;
+  ticketStatut?: string;
+  ticketEmisLe?: string;
+  ticketUtiliseLe?: string;
 }
 
 export interface ReservationRequest {
@@ -50,4 +54,18 @@ export interface ReservationRequest {
   dateFin: string;
   remarques?: string;
   clientId?: number;
+}
+
+export interface ReservationTicket {
+  reservationId: number;
+  ticketCode?: string;
+  ticketToken?: string;
+  statut: 'ACTIF' | 'UTILISE' | 'ANNULE' | 'EXPIRE' | 'EN_ATTENTE_VALIDATION' | string;
+  emisLe?: string;
+  utiliseLe?: string;
+  qrPayload?: string;
+  client: string;
+  periode: string;
+  parasols: string;
+  equipement: string;
 }

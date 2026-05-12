@@ -5,7 +5,7 @@
       <h1>Des formules pour chaque journée de plage.</h1>
       <p>
         Réservation à la journée, week-end, famille ou premium : chaque offre prépare votre accès,
-        votre mobilier, votre QR Pass et votre facture.
+        votre mobilier, votre Bagni Pass et votre facture.
       </p>
       <div class="guide-actions">
         @if (auth.isAuthenticated() && !auth.isConcessionnaire()) {
@@ -27,14 +27,25 @@
         </div>
       </div>
       <strong>Ticket numérique</strong>
-      <small>Disponible après validation</small>
+      <small>{{ passService.activePass()?.offerName || 'Disponible après validation' }}</small>
     </div>
   </section>
 
+  @if (recommendedOffer(); as offer) {
+  <section class="featured-offer card">
+    <div>
+      <span class="section-label">Offre recommandee</span>
+      <h2>{{ offer.name }}</h2>
+      <p>{{ offer.description }}</p>
+    </div>
+    <strong>{{ offer.price }}</strong>
+  </section>
+  }
+
   <section class="offers-grid">
-    @for (offer of offers; track offer.name) {
-    <article class="offer-card">
-      <span>{{ offer.badge }}</span>
+    @for (offer of offers(); track offer.name) {
+    <article class="offer-card" [class.is-recommended]="offer.recommended">
+      <span>{{ offer.recommended ? 'Recommande' : offer.badge }}</span>
       <h2>{{ offer.name }}</h2>
       <strong>{{ offer.price }}</strong>
       <p>{{ offer.description }}</p>
@@ -43,7 +54,39 @@
         <li>{{ item }}</li>
         }
       </ul>
+      <div class="offer-card-meta">
+        <span>{{ offer.credits || 'Selon réservation' }}</span>
+        <span>{{ offer.discount || '-' }}</span>
+      </div>
+      <div class="offer-card-actions">
+        <button class="btn btn--outline btn--sm" type="button" (click)="selectOffer(offer)">
+          {{ selectedOffer() === offer.name ? 'Selectionnee' : 'Comparer' }}
+        </button>
+        @if (auth.isAuthenticated() && !auth.isConcessionnaire()) {
+        <button class="btn btn--primary btn--sm" type="button" (click)="activateOffer(offer)">
+          {{ activatedOffer() === offer.name ? 'Activee' : 'Ajouter au compte' }}
+        </button>
+        } @else if (!auth.isAuthenticated()) {
+        <a routerLink="/register" class="btn btn--primary btn--sm">Creer un compte</a>
+        }
+      </div>
     </article>
     }
+  </section>
+
+  <section class="offer-comparison card">
+    <h2>Comparer les formules</h2>
+    <div class="offer-comparison-grid">
+      <span>Formule</span>
+      <span>Credit</span>
+      <span>Avantage</span>
+      <span>Bagni Pass</span>
+      @for (offer of offers(); track offer.name) {
+      <strong>{{ offer.name }}</strong>
+      <span>{{ offer.credits || '-' }}</span>
+      <span>{{ offer.discount || '-' }}</span>
+      <span>Inclus</span>
+      }
+    </div>
   </section>
 </div>

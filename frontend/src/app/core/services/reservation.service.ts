@@ -1,7 +1,12 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Reservation, ReservationRequest, Statut } from '../models/reservation.model';
+import {
+  Reservation,
+  ReservationRequest,
+  ReservationTicket,
+  Statut,
+} from '../models/reservation.model';
 import { Page } from './client.service';
 import { API_BASE_URL } from '../api-url';
 
@@ -34,6 +39,18 @@ export class ReservationService {
     return this.http.get(`${this.apiUrl}/reservations/${id}/invoice`, {
       responseType: 'blob',
     });
+  }
+
+  getTicket(id: number): Observable<ReservationTicket> {
+    return this.http.get<ReservationTicket>(`${this.apiUrl}/reservations/${id}/ticket`);
+  }
+
+  findTicket(ticketCode: string): Observable<ReservationTicket> {
+    return this.http.get<ReservationTicket>(`${this.apiUrl}/tickets/${ticketCode}`);
+  }
+
+  checkInTicket(ticketCode: string): Observable<ReservationTicket> {
+    return this.http.post<ReservationTicket>(`${this.apiUrl}/tickets/${ticketCode}/check-in`, {});
   }
 
   validate(id: number): Observable<Reservation> {

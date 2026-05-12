@@ -156,10 +156,7 @@
         </svg>
       </button>
       <span class="detail-title">Réservation #{{ res.id }}</span>
-      <app-tag [variant]="statutVariant(res.statut)">
-        {{ res.statut === 'EN_ATTENTE' ? 'En attente' : res.statut === 'VALIDEE' ? 'Validée' :
-        'Refusée' }}
-      </app-tag>
+      <app-tag [variant]="statutVariant(res.statut)"> {{ statutLabel(res.statut) }} </app-tag>
     </div>
 
     <div class="detail-client">

@@ -7,17 +7,19 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.lang.NonNull;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 public interface ReservationRepository extends JpaRepository<Reservation, Long> {
 
-    Page<Reservation> findAll(Pageable pageable);
+    Page<Reservation> findByStatut(@NonNull Statut statut, @NonNull Pageable pageable);
 
-    Page<Reservation> findByStatut(Statut statut, Pageable pageable);
+    List<Reservation> findByClientId(@NonNull Long clientId);
 
-    List<Reservation> findByClientId(Long clientId);
+    Optional<Reservation> findByTicketCode(@NonNull String ticketCode);
 
     @Query("""
         SELECT r FROM Reservation r
@@ -25,8 +27,8 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
           AND r.dateDebut <= :dateFin
           AND r.dateFin >= :dateDebut
     """)
-    List<Reservation> findForPlanning(@Param("dateDebut") LocalDate dateDebut,
-                                      @Param("dateFin") LocalDate dateFin);
+    List<Reservation> findForPlanning(@Param("dateDebut") @NonNull LocalDate dateDebut,
+                                      @Param("dateFin") @NonNull LocalDate dateFin);
 
     @Query("""
         SELECT DISTINCT p.id FROM Reservation r JOIN r.parasols p
@@ -35,8 +37,8 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
           AND r.dateDebut <= :dateFin
           AND r.dateFin >= :dateDebut
     """)
-    List<Long> findConflictingParasolIds(@Param("parasolIds") List<Long> parasolIds,
-                                         @Param("dateDebut") LocalDate dateDebut,
-                                         @Param("dateFin") LocalDate dateFin,
-                                         @Param("statutRefuse") Statut statutRefuse);
+    List<Long> findConflictingParasolIds(@Param("parasolIds") @NonNull List<Long> parasolIds,
+                                         @Param("dateDebut") @NonNull LocalDate dateDebut,
+                                         @Param("dateFin") @NonNull LocalDate dateFin,
+                                         @Param("statutRefuse") @NonNull Statut statutRefuse);
 }

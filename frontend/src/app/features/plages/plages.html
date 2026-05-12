@@ -9,12 +9,25 @@
 
   <div class="catalog-filters" aria-label="Filtres de recherche">
     @for (filter of filters; track filter) {
-    <button type="button">{{ filter }}</button>
+    <button type="button" [class.is-active]="activeFilter() === filter" (click)="setFilter(filter)">
+      {{ filter }}
+    </button>
     }
   </div>
 
+  <div class="catalog-toolbar">
+    <span>{{ filteredBeaches().length }} plage(s) disponible(s)</span>
+    <div>
+      @for (mode of sortModes; track mode) {
+      <button type="button" [class.is-active]="sortMode() === mode" (click)="setSort(mode)">
+        {{ mode }}
+      </button>
+      }
+    </div>
+  </div>
+
   <section class="beach-catalog-grid">
-    @for (beach of beaches; track beach.slug) {
+    @for (beach of filteredBeaches(); track beach.slug) {
     <article class="beach-catalog-card">
       <div
         class="beach-photo"
@@ -46,6 +59,10 @@
         </div>
       </div>
     </article>
+    } @empty {
+    <div class="empty-state">
+      Aucune plage ne correspond a ce filtre. Essayez une autre ambiance.
+    </div>
     }
   </section>
 </div>

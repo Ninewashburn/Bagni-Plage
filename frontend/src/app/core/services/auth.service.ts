@@ -56,12 +56,14 @@ export class AuthService {
   }
 
   login(credentials: LoginRequest): Observable<LoginResponse> {
+    this.clearSession();
     return this.http
       .post<LoginResponse>(`${this.apiUrl}/auth/login`, credentials)
       .pipe(tap(response => this.storeSession(response)));
   }
 
   register(request: RegisterRequest): Observable<LoginResponse> {
+    this.clearSession();
     return this.http
       .post<LoginResponse>(`${this.apiUrl}/auth/register`, request)
       .pipe(tap(response => this.storeSession(response)));

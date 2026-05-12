@@ -121,6 +121,22 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
         Clients
       </a>
 
+      <a class="sidebar-nav-item" routerLink="/check-in" routerLinkActive="active">
+        <svg
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.8"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h2M20 14v6M14 20h2" />
+        </svg>
+        Check-in
+      </a>
+
       <div style="margin-top:auto">
         <a
           class="sidebar-nav-item"

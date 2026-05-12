@@ -51,7 +51,7 @@ POSTGRES_DB=bagni_plage
 POSTGRES_USER=bagni
 POSTGRES_PASSWORD=change_me
 JWT_SECRET=replace_with_a_long_random_secret_of_at_least_32_chars
-CORS_ORIGINS=http://localhost:4200
+CORS_ORIGINS=http://localhost:4200,http://127.0.0.1:4200
 ```
 
 Puis lancer :

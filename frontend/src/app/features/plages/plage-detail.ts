@@ -1,7 +1,17 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  OnInit,
+  inject,
+  input,
+  signal,
+} from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
-import { BEACH_SITES } from '../../shared/bagni-catalog';
+import { CatalogService } from '../../core/services/catalog.service';
+import { BEACH_SITES, BeachSite } from '../../shared/bagni-catalog';
 
 @Component({
   selector: 'app-plage-detail',
@@ -10,11 +20,19 @@ import { BEACH_SITES } from '../../shared/bagni-catalog';
   imports: [RouterLink],
   templateUrl: './plage-detail.html',
 })
-export class PlageDetailComponent {
+export class PlageDetailComponent implements OnInit {
   slug = input.required<string>();
 
   protected auth = inject(AuthService);
-  protected beach = computed(
-    () => BEACH_SITES.find(site => site.slug === this.slug()) ?? BEACH_SITES[0],
-  );
+  private catalogService = inject(CatalogService);
+  private destroyRef = inject(DestroyRef);
+
+  protected beach = signal<BeachSite>(BEACH_SITES[0]);
+
+  ngOnInit(): void {
+    this.catalogService
+      .getSite(this.slug())
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(site => this.beach.set(site));
+  }
 }

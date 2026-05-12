@@ -81,7 +81,7 @@
         @for (reservation of reservations().slice(0, 6); track reservation.id) {
         <div class="dashboard-row dashboard-row--static">
           <app-tag [variant]="statutVariant(reservation.statut)">
-            {{ reservation.statut }}
+            {{ statutLabel(reservation.statut) }}
           </app-tag>
           <div class="dashboard-row-main">
             <strong>{{ reservation.client.prenom }} {{ reservation.client.nom }}</strong>

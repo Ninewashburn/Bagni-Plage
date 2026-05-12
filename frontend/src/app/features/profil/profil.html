@@ -43,64 +43,55 @@
 
       <div class="profil-quick-links">
         <a routerLink="/reservations">
-          <span aria-hidden="true">
-            <svg
-              width="22"
-              height="22"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.8"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <path d="M8 2v4M16 2v4M3 10h18" />
-              <rect x="3" y="4" width="18" height="18" rx="2" />
-              <path d="m9 15 2 2 4-4" />
-            </svg>
-          </span>
+          <span aria-hidden="true" data-symbol="OK"></span>
           <strong>Mes réservations</strong>
           <small>Suivi, statuts et paiements</small>
         </a>
         <a routerLink="/reservations/nouvelle">
-          <span aria-hidden="true">
-            <svg
-              width="22"
-              height="22"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.8"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <path d="M12 5v14M5 12h14" />
-            </svg>
-          </span>
+          <span aria-hidden="true" data-symbol="+"></span>
           <strong>Réserver</strong>
           <small>Choisir une date et un parasol</small>
         </a>
         <a routerLink="/reservations">
-          <span aria-hidden="true">
-            <svg
-              width="22"
-              height="22"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.8"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <path d="M6 2h9l5 5v15H6z" />
-              <path d="M14 2v6h6M9 13h6M9 17h4" />
-            </svg>
-          </span>
+          <span aria-hidden="true" data-symbol="PDF"></span>
           <strong>Mes factures</strong>
           <small>Téléchargements PDF</small>
         </a>
+        <a routerLink="/ma-journee">
+          <span aria-hidden="true" data-symbol="QR"></span>
+          <strong>Bagni Pass</strong>
+          <small>Accès et journée plage</small>
+        </a>
       </div>
     </div>
+
+    @if (passService.activePass(); as pass) {
+    <div class="profil-card card active-pass-panel">
+      <div>
+        <span class="section-label">Bagni Pass</span>
+        <div class="profil-section-title">{{ pass.offerName }}</div>
+        <p>Votre formule est rattachee a ce compte pour la saison en cours.</p>
+      </div>
+      <div class="active-pass-grid">
+        <span>
+          <small>Crédits</small>
+          <strong>{{ pass.credits }}</strong>
+        </span>
+        <span>
+          <small>Avantage</small>
+          <strong>{{ pass.discount }}</strong>
+        </span>
+        <span>
+          <small>Valable jusqu'au</small>
+          <strong>{{ pass.validUntil | date:'d MMMM yyyy':'':'fr' }}</strong>
+        </span>
+      </div>
+      <div class="guide-actions">
+        <a routerLink="/offres" class="btn btn--outline btn--sm">Changer d'offre</a>
+        <a routerLink="/ma-journee" class="btn btn--primary btn--sm">Préparer ma journée</a>
+      </div>
+    </div>
+    }
 
     <div class="profil-card card">
       <div class="profil-section-title">Modifier mes informations</div>

@@ -2,6 +2,7 @@ package fr.bagni.backend.service;
 
 import fr.bagni.backend.dto.request.ReservationRequest;
 import fr.bagni.backend.dto.response.ReservationResponse;
+import fr.bagni.backend.dto.response.ReservationTicketResponse;
 import fr.bagni.backend.entity.Client;
 import fr.bagni.backend.entity.Concessionnaire;
 import fr.bagni.backend.entity.Parasol;
@@ -16,6 +17,7 @@ import fr.bagni.backend.repository.ReservationRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.lang.NonNull;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,6 +33,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.UUID;
 
 @Service
@@ -48,19 +51,19 @@ public class ReservationService {
     private final ParasolService parasolService;
     private final TarificationService tarificationService;
 
-    public Page<ReservationResponse> findAll(Pageable pageable) {
+    public Page<ReservationResponse> findAll(@NonNull Pageable pageable) {
         return reservationRepository.findAll(pageable).map(this::toResponse);
     }
 
-    public Page<ReservationResponse> findByStatut(Statut statut, Pageable pageable) {
+    public Page<ReservationResponse> findByStatut(@NonNull Statut statut, @NonNull Pageable pageable) {
         return reservationRepository.findByStatut(statut, pageable).map(this::toResponse);
     }
 
-    public Page<ReservationResponse> findPending(Pageable pageable) {
+    public Page<ReservationResponse> findPending(@NonNull Pageable pageable) {
         return reservationRepository.findByStatut(Statut.EN_ATTENTE, pageable).map(this::toResponse);
     }
 
-    public List<ReservationResponse> findByClient(Long clientId) {
+    public List<ReservationResponse> findByClient(@NonNull Long clientId) {
         return reservationRepository.findByClientId(clientId).stream()
                 .map(this::toResponse)
                 .toList();
@@ -69,10 +72,10 @@ public class ReservationService {
     public List<ReservationResponse> findByClientEmail(String email) {
         var client = clientRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("Client introuvable"));
-        return findByClient(client.getId());
+        return findByClient(requireId(client.getId(), "clientId"));
     }
 
-    public List<ReservationResponse> findForPlanning(LocalDate from, LocalDate to) {
+    public List<ReservationResponse> findForPlanning(@NonNull LocalDate from, @NonNull LocalDate to) {
         return reservationRepository.findForPlanning(from, to).stream()
                 .map(this::toResponse)
                 .toList();
@@ -90,30 +93,34 @@ public class ReservationService {
         if (request.clientId() == null) {
             throw new BusinessException("Le client est obligatoire pour une reservation saisie par le concessionnaire");
         }
-        var client = clientRepository.findById(request.clientId())
+        var clientId = requireId(request.clientId(), "Le client");
+        var client = clientRepository.findById(clientId)
                 .orElseThrow(() -> new ResourceNotFoundException("Client introuvable"));
         return createForClient(request, client);
     }
 
     private ReservationResponse createForClient(ReservationRequest request, Client client) {
-        var parasolIds = deduplicate(request.parasolIds());
+        var dateDebut = requireDate(request.dateDebut(), "dateDebut");
+        var dateFin = requireDate(request.dateFin(), "dateFin");
+        var equipement = Objects.requireNonNull(request.equipement(), "equipement obligatoire");
+        var parasolIds = deduplicate(requireIds(request.parasolIds(), "parasolIds"));
         var parasols = parasolRepository.findAllByIdForUpdate(parasolIds);
         if (parasols.size() != parasolIds.size()) {
             throw new ResourceNotFoundException("Un ou plusieurs parasols introuvables");
         }
 
-        validateDates(request.dateDebut(), request.dateFin());
-        validateAvailability(parasolIds, request.dateDebut(), request.dateFin());
+        validateDates(dateDebut, dateFin);
+        validateAvailability(parasolIds, dateDebut, dateFin);
 
         var montant = tarificationService.calculerMontant(
-                client, parasols, request.equipement(), request.dateDebut(), request.dateFin());
+                client, parasols, equipement, dateDebut, dateFin);
 
         var reservation = Reservation.builder()
                 .client(client)
                 .parasols(parasols)
-                .equipement(request.equipement())
-                .dateDebut(request.dateDebut())
-                .dateFin(request.dateFin())
+                .equipement(equipement)
+                .dateDebut(dateDebut)
+                .dateFin(dateFin)
                 .montantPaye(montant)
                 .statut(Statut.EN_ATTENTE)
                 .remarques(request.remarques())
@@ -122,7 +129,7 @@ public class ReservationService {
                 .remboursementStatut("NON_REQUIS")
                 .build();
 
-        return toResponse(reservationRepository.save(reservation));
+        return toResponse(reservationRepository.save(Objects.requireNonNull(reservation)));
     }
 
     public byte[] generateInvoicePdf(Long id, String userEmail, boolean concessionnaire) {
@@ -144,7 +151,8 @@ public class ReservationService {
         reservation.setMotifRefus(null);
         reservation.setRemboursementStatut("NON_REQUIS");
         reservation.setStatut(Statut.VALIDEE);
-        return toResponse(reservationRepository.save(reservation));
+        issueTicket(reservation);
+        return toResponse(reservationRepository.save(Objects.requireNonNull(reservation)));
     }
 
     @Transactional
@@ -158,11 +166,56 @@ public class ReservationService {
         reservation.setMotifRefus(blankToNull(motif));
         reservation.setRemboursementReference("REF-SIM-" + UUID.randomUUID());
         reservation.setRemboursementStatut("REMBOURSE_SIMULE");
+        if (reservation.getTicketCode() != null) {
+            reservation.setTicketStatut("ANNULE");
+        }
         reservation.setStatut(Statut.REFUSEE);
-        return toResponse(reservationRepository.save(reservation));
+        return toResponse(reservationRepository.save(Objects.requireNonNull(reservation)));
     }
 
-    private void validateDates(LocalDate dateDebut, LocalDate dateFin) {
+    @Transactional
+    public ReservationTicketResponse getTicket(Long id, String userEmail, boolean concessionnaire) {
+        var reservation = getOrThrow(id);
+        assertTicketAccess(reservation, userEmail, concessionnaire);
+        if (reservation.getStatut() == Statut.VALIDEE && reservation.getTicketCode() == null) {
+            issueTicket(reservation);
+            reservationRepository.save(Objects.requireNonNull(reservation));
+        }
+        return toTicketResponse(reservation);
+    }
+
+    @Transactional
+    public ReservationTicketResponse checkIn(String ticketCode, String concessionnaireEmail) {
+        findConcessionnaire(concessionnaireEmail);
+        var reservation = reservationRepository.findByTicketCode(requireTicketCode(ticketCode))
+                .orElseThrow(() -> new ResourceNotFoundException("Ticket introuvable"));
+        if (reservation.getStatut() != Statut.VALIDEE) {
+            throw new BusinessException("Ce ticket n'est pas valide");
+        }
+        if ("UTILISE".equals(reservation.getTicketStatut())) {
+            throw new BusinessException("Ce ticket a deja ete utilise");
+        }
+        if (reservation.getDateFin().isBefore(LocalDate.now())) {
+            reservation.setTicketStatut("EXPIRE");
+            reservationRepository.save(Objects.requireNonNull(reservation));
+            throw new BusinessException("Ce ticket est expire");
+        }
+        if (reservation.getTicketCode() == null) {
+            issueTicket(reservation);
+        }
+        reservation.setTicketStatut("UTILISE");
+        reservation.setTicketUtiliseLe(LocalDateTime.now());
+        return toTicketResponse(reservationRepository.save(Objects.requireNonNull(reservation)));
+    }
+
+    public ReservationTicketResponse findTicketByCode(String ticketCode, String concessionnaireEmail) {
+        findConcessionnaire(concessionnaireEmail);
+        var reservation = reservationRepository.findByTicketCode(requireTicketCode(ticketCode))
+                .orElseThrow(() -> new ResourceNotFoundException("Ticket introuvable"));
+        return toTicketResponse(reservation);
+    }
+
+    private void validateDates(@NonNull LocalDate dateDebut, @NonNull LocalDate dateFin) {
         if (dateFin.isBefore(dateDebut)) {
             throw new BusinessException("La date de fin doit etre apres la date de debut");
         }
@@ -173,14 +226,14 @@ public class ReservationService {
         }
     }
 
-    private void validateAvailability(List<Long> parasolIds, LocalDate dateDebut, LocalDate dateFin) {
+    private void validateAvailability(@NonNull List<Long> parasolIds, @NonNull LocalDate dateDebut, @NonNull LocalDate dateFin) {
         var conflits = reservationRepository.findConflictingParasolIds(parasolIds, dateDebut, dateFin, Statut.REFUSEE);
         if (!conflits.isEmpty()) {
             throw new BusinessException("Un ou plusieurs parasols sont deja reserves sur cette periode: " + conflits);
         }
     }
 
-    private List<Long> deduplicate(List<Long> ids) {
+    private @NonNull List<Long> deduplicate(@NonNull List<Long> ids) {
         return new ArrayList<>(new LinkedHashSet<>(ids));
     }
 
@@ -190,8 +243,21 @@ public class ReservationService {
     }
 
     private Reservation getOrThrow(Long id) {
-        return reservationRepository.findById(id)
+        var reservationId = requireId(id, "reservationId");
+        return reservationRepository.findById(reservationId)
                 .orElseThrow(() -> new ResourceNotFoundException("Reservation introuvable"));
+    }
+
+    private @NonNull Long requireId(Long id, String label) {
+        return Objects.requireNonNull(id, label + " obligatoire");
+    }
+
+    private @NonNull LocalDate requireDate(LocalDate date, String label) {
+        return Objects.requireNonNull(date, label + " obligatoire");
+    }
+
+    private @NonNull List<Long> requireIds(List<Long> ids, String label) {
+        return Objects.requireNonNull(ids, label + " obligatoire");
     }
 
     private ReservationResponse toResponse(Reservation r) {
@@ -202,7 +268,65 @@ public class ReservationService {
                 parasols, r.getEquipement(), r.getDateDebut(), r.getDateFin(),
                 r.getMontantPaye(), r.getStatut(), r.getRemarques(), r.getDateTraitement(),
                 r.getMotifRefus(), r.getPaiementReference(), r.getPaiementStatut(),
-                r.getRemboursementReference(), r.getRemboursementStatut());
+                r.getRemboursementReference(), r.getRemboursementStatut(), r.getTicketCode(),
+                r.getTicketStatut(), r.getTicketEmisLe(), r.getTicketUtiliseLe());
+    }
+
+    private void assertTicketAccess(Reservation reservation, String userEmail, boolean concessionnaire) {
+        if (!concessionnaire && !reservation.getClient().getEmail().equals(userEmail)) {
+            throw new AccessDeniedException("Ticket non accessible");
+        }
+    }
+
+    private void issueTicket(Reservation reservation) {
+        if (reservation.getTicketCode() != null) {
+            if (!"UTILISE".equals(reservation.getTicketStatut())) {
+                reservation.setTicketStatut("ACTIF");
+            }
+            return;
+        }
+        var idPart = reservation.getId() == null ? "TEMP" : reservation.getId().toString();
+        var randomPart = UUID.randomUUID().toString().substring(0, 8).toUpperCase(Locale.ROOT);
+        reservation.setTicketCode("BAGNI-" + idPart + "-" + randomPart);
+        reservation.setTicketToken(UUID.randomUUID().toString());
+        reservation.setTicketStatut("ACTIF");
+        reservation.setTicketEmisLe(LocalDateTime.now());
+    }
+
+    private ReservationTicketResponse toTicketResponse(Reservation reservation) {
+        var parasols = reservation.getParasols().stream()
+                .map(Parasol::getIdentifiant)
+                .toList();
+        var formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        var periode = reservation.getDateDebut().format(formatter) + " - " + reservation.getDateFin().format(formatter);
+        var ticketCode = reservation.getTicketCode();
+        var ticketToken = reservation.getTicketToken();
+        var statut = reservation.getStatut() == Statut.VALIDEE
+                ? nullToDash(reservation.getTicketStatut())
+                : "EN_ATTENTE_VALIDATION";
+        var payload = ticketCode == null || ticketToken == null
+                ? null
+                : "BAGNI:TICKET:" + ticketCode + ":" + ticketToken;
+        return new ReservationTicketResponse(
+                reservation.getId(),
+                ticketCode,
+                ticketToken,
+                statut,
+                reservation.getTicketEmisLe(),
+                reservation.getTicketUtiliseLe(),
+                payload,
+                fullName(reservation.getClient()),
+                periode,
+                String.join(", ", parasols),
+                equipmentLabel(reservation.getEquipement())
+        );
+    }
+
+    private @NonNull String requireTicketCode(String ticketCode) {
+        if (ticketCode == null || ticketCode.isBlank()) {
+            throw new BusinessException("Le code ticket est obligatoire");
+        }
+        return Objects.requireNonNull(ticketCode.trim(), "ticketCode obligatoire");
     }
 
     private String blankToNull(String value) {

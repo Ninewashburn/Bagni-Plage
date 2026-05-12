@@ -23,5 +23,9 @@ public record ReservationResponse(
         String paiementReference,
         String paiementStatut,
         String remboursementReference,
-        String remboursementStatut
+        String remboursementStatut,
+        String ticketCode,
+        String ticketStatut,
+        LocalDateTime ticketEmisLe,
+        LocalDateTime ticketUtiliseLe
 ) {}

@@ -3,18 +3,31 @@
     <div>
       <span class="section-label">Ma journée</span>
       <h1>Votre journée à Bagni Plage.</h1>
+      @if (reservation(); as r) {
       <p>
-        Retrouvez ici votre prochain accès plage, votre QR Pass, vos informations d’arrivée et les
-        recommandations utiles autour du site réservé.
+        Votre prochaine réservation est prête à être suivie depuis cet espace : accès plage,
+        mobilier, facture et recommandations locales.
       </p>
       <div class="guide-actions">
-        <a routerLink="/reservations" class="btn btn--primary">Mes réservations</a>
+        <a [routerLink]="['/reservations', r.id, 'ticket']" class="btn btn--primary">
+          Voir mon Bagni Pass
+        </a>
         <a routerLink="/guide-local" class="btn btn--outline">Guide local</a>
       </div>
+      } @else {
+      <p>
+        Retrouvez ici votre prochain accès plage, votre Bagni Pass, vos informations d'arrivée et
+        les recommandations utiles autour du site réservé.
+      </p>
+      <div class="guide-actions">
+        <a routerLink="/reservations/nouvelle" class="btn btn--primary">Réserver</a>
+        <a routerLink="/plages" class="btn btn--outline">Voir les plages</a>
+      </div>
+      }
     </div>
 
     <div class="offer-pass-card">
-      <span>QR Pass</span>
+      <span>Bagni Pass</span>
       <div class="qr-card">
         <div class="qr-code" aria-hidden="true">
           @for (cell of qrCells; track $index) {
@@ -22,25 +35,49 @@
           }
         </div>
       </div>
-      <strong>En attente de réservation</strong>
-      <small>Le ticket apparaît après paiement</small>
+      <strong>{{ ticket()?.ticketCode || 'En attente' }}</strong>
+      <small
+        >{{ ticket()?.statut ? ticketStatusLabel(ticket()!.statut) : 'Disponible après validation'
+        }}</small
+      >
     </div>
   </section>
 
   <section class="day-summary-grid">
     <article>
       <span>Prochaine plage</span>
-      <strong>À confirmer</strong>
+      <strong>Bagni Méditerranée</strong>
     </article>
     <article>
       <span>Emplacement</span>
+      @if (reservation(); as currentReservation) {
+      <strong>{{ formatParasols(currentReservation) }}</strong>
+      } @else {
       <strong>À choisir</strong>
+      }
     </article>
     <article>
-      <span>Facture</span>
-      <strong>Disponible après paiement</strong>
+      <span>Formule</span>
+      <strong>{{ passService.activePass()?.offerName || 'Aucune offre active' }}</strong>
     </article>
   </section>
+
+  @if (reservation(); as r) {
+  <section class="day-summary-grid">
+    <article>
+      <span>Date</span>
+      <strong>{{ r.dateDebut | date:'d MMMM yyyy':'':'fr' }}</strong>
+    </article>
+    <article>
+      <span>Mobilier</span>
+      <strong>{{ equipmentLabel(r.equipement) }}</strong>
+    </article>
+    <article>
+      <span>Statut</span>
+      <strong>{{ reservationStatusLabel(r.statut) }}</strong>
+    </article>
+  </section>
+  }
 
   <section class="timeline-card">
     <h2>Déroulé conseillé</h2>
@@ -51,4 +88,18 @@
     </div>
     }
   </section>
+
+  @if (suggestedPlaces().length) {
+  <section class="day-recommendations">
+    <div class="section-heading">
+      <span class="section-label">Guide local</span>
+      <h2>Adresses utiles pour votre journée</h2>
+    </div>
+    <div class="guide-grid">
+      @for (place of suggestedPlaces(); track place.name) {
+      <app-guide-place-card [place]="place" />
+      }
+    </div>
+  </section>
+  }
 </div>

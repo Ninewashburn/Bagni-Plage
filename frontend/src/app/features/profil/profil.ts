@@ -7,6 +7,7 @@ import {
   signal,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { DatePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -16,6 +17,7 @@ import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { AuthService } from '../../core/services/auth.service';
 import { ClientService } from '../../core/services/client.service';
+import { PassService } from '../../core/services/pass.service';
 import { PaysService } from '../../core/services/pays.service';
 import { Pays } from '../../core/models/pays.model';
 import { AvatarComponent } from '../../shared/avatar';
@@ -26,6 +28,7 @@ import { AvatarComponent } from '../../shared/avatar';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     ReactiveFormsModule,
+    DatePipe,
     MatFormFieldModule,
     MatInputModule,
     MatSelectModule,
@@ -37,6 +40,7 @@ import { AvatarComponent } from '../../shared/avatar';
 })
 export class ProfilComponent implements OnInit {
   protected auth = inject(AuthService);
+  protected passService = inject(PassService);
   private clientService = inject(ClientService);
   private paysService = inject(PaysService);
   private snackBar = inject(MatSnackBar);

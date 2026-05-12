@@ -1,0 +1,62 @@
+<div class="page-container">
+  <div class="page-header">
+    <div>
+      <h1 class="section-title">Check-in</h1>
+      <p class="section-sub">Contrôle des Bagni Pass à l'arrivée</p>
+    </div>
+  </div>
+
+  <section class="checkin-layout">
+    <form class="checkin-form card" [formGroup]="form" (ngSubmit)="rechercher()">
+      <mat-form-field appearance="outline">
+        <mat-label>Code Bagni Pass</mat-label>
+        <input matInput formControlName="ticketCode" placeholder="BAGNI-101-ABC12345" />
+      </mat-form-field>
+
+      <div class="guide-actions">
+        <button class="btn btn--outline" type="submit" [disabled]="form.invalid || loading()">
+          Vérifier
+        </button>
+        <button
+          class="btn btn--primary"
+          type="button"
+          (click)="validerArrivee()"
+          [disabled]="form.invalid || loading()"
+        >
+          Valider l'arrivée
+        </button>
+      </div>
+
+      @if (error()) {
+      <p class="error-msg">{{ error() }}</p>
+      }
+    </form>
+
+    <article class="checkin-result card">
+      @if (ticket(); as t) {
+      <span class="section-label">Ticket</span>
+      <h2>{{ t.ticketCode }}</h2>
+      <dl>
+        <div>
+          <dt>Client</dt>
+          <dd>{{ t.client }}</dd>
+        </div>
+        <div>
+          <dt>Période</dt>
+          <dd>{{ t.periode }}</dd>
+        </div>
+        <div>
+          <dt>Parasols</dt>
+          <dd>{{ t.parasols }}</dd>
+        </div>
+        <div>
+          <dt>Statut</dt>
+          <dd>{{ ticketStatusLabel(t.statut) }}</dd>
+        </div>
+      </dl>
+      } @else {
+      <p class="empty-state">Aucun ticket chargé.</p>
+      }
+    </article>
+  </section>
+</div>

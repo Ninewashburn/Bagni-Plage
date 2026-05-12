@@ -23,7 +23,7 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
       <div>
         <div class="name" [style.font-size.px]="size()">Bagni Plage</div>
         @if (!compact()) {
-          <div class="sub" [style.font-size.px]="size() * 0.46">dal 1962 · Liguria</div>
+          <div class="sub" [style.font-size.px]="size() * 0.46">dal 1962 · Ligurie</div>
         }
       </div>
     </div>

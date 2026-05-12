@@ -20,6 +20,7 @@ import { Reservation } from '../../core/models/reservation.model';
 import { FilePlageDetail } from '../../core/models/parasol.model';
 import { ParasolGridComponent } from '../../shared/parasol-grid/parasol-grid';
 import { AvatarComponent } from '../../shared/avatar';
+import { equipmentLabel, reservationStatusLabel } from '../../shared/reservation-labels';
 import { TagComponent } from '../../shared/tag';
 
 @Component({
@@ -191,17 +192,11 @@ export class PlanningComponent implements OnInit {
   }
 
   equipLabel(eq: string): string {
-    return (
-      (
-        {
-          UN_LIT: '1 lit',
-          DEUX_LITS: '2 lits',
-          UN_FAUTEUIL: '1 fauteuil',
-          FAUTEUIL_ET_LIT: '1 fauteuil + 1 lit',
-          DEUX_FAUTEUILS: '2 fauteuils',
-        } as Record<string, string>
-      )[eq] ?? eq
-    );
+    return equipmentLabel(eq);
+  }
+
+  statutLabel(statut: string): string {
+    return reservationStatusLabel(statut);
   }
 
   private toIsoDate(d: Date): string {

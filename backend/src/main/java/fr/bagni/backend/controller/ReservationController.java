@@ -3,6 +3,7 @@ package fr.bagni.backend.controller;
 import fr.bagni.backend.dto.request.ReservationRequest;
 import fr.bagni.backend.dto.request.ReservationDecisionRequest;
 import fr.bagni.backend.dto.response.ReservationResponse;
+import fr.bagni.backend.dto.response.ReservationTicketResponse;
 import fr.bagni.backend.entity.enums.Statut;
 import fr.bagni.backend.service.ReservationService;
 import jakarta.validation.Valid;
@@ -15,6 +16,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.lang.NonNull;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -33,14 +35,14 @@ public class ReservationController {
     @PreAuthorize("hasRole('CONCESSIONNAIRE')")
     public Page<ReservationResponse> findAll(
             @RequestParam(required = false) Statut statut,
-            @PageableDefault(sort = "dateDebut", direction = Sort.Direction.DESC) Pageable pageable) {
+            @PageableDefault(sort = "dateDebut", direction = Sort.Direction.DESC) @NonNull Pageable pageable) {
         return statut == null ? reservationService.findAll(pageable) : reservationService.findByStatut(statut, pageable);
     }
 
     @GetMapping("/pending")
     @PreAuthorize("hasRole('CONCESSIONNAIRE')")
     public Page<ReservationResponse> findPending(
-            @PageableDefault(sort = "dateDebut", direction = Sort.Direction.DESC) Pageable pageable) {
+            @PageableDefault(sort = "dateDebut", direction = Sort.Direction.DESC) @NonNull Pageable pageable) {
         return reservationService.findPending(pageable);
     }
 
@@ -58,9 +60,18 @@ public class ReservationController {
                 .anyMatch(authority -> authority.getAuthority().equals("ROLE_CONCESSIONNAIRE"));
         byte[] pdf = reservationService.generateInvoicePdf(id, userDetails.getUsername(), concessionnaire);
         return ResponseEntity.ok()
-                .contentType(MediaType.APPLICATION_PDF)
+                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_PDF_VALUE)
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=facture-bagni-" + id + ".pdf")
                 .body(pdf);
+    }
+
+    @GetMapping("/{id}/ticket")
+    @PreAuthorize("hasAnyRole('CLIENT', 'CONCESSIONNAIRE')")
+    public ReservationTicketResponse ticket(@PathVariable Long id,
+                                            @AuthenticationPrincipal UserDetails userDetails) {
+        boolean concessionnaire = userDetails.getAuthorities().stream()
+                .anyMatch(authority -> authority.getAuthority().equals("ROLE_CONCESSIONNAIRE"));
+        return reservationService.getTicket(id, userDetails.getUsername(), concessionnaire);
     }
 
     @PostMapping
@@ -93,4 +104,5 @@ public class ReservationController {
                 request == null ? null : request.motif()
         );
     }
+
 }

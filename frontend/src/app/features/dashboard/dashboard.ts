@@ -16,6 +16,7 @@ import { ParasolService } from '../../core/services/parasol.service';
 import { ReservationService } from '../../core/services/reservation.service';
 import { Reservation } from '../../core/models/reservation.model';
 import { AvatarComponent } from '../../shared/avatar';
+import { reservationStatusLabel } from '../../shared/reservation-labels';
 import { TagComponent } from '../../shared/tag';
 
 @Component({
@@ -98,5 +99,9 @@ export class DashboardComponent implements OnInit {
 
   statutVariant(statut: Reservation['statut']): 'pending' | 'accepted' | 'refused' {
     return ({ EN_ATTENTE: 'pending', VALIDEE: 'accepted', REFUSEE: 'refused' } as const)[statut];
+  }
+
+  statutLabel(statut: Reservation['statut']): string {
+    return reservationStatusLabel(statut);
   }
 }

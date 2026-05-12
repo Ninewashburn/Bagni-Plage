@@ -78,4 +78,19 @@ public class Reservation {
 
     @Column(name = "remboursement_statut", length = 40)
     private String remboursementStatut;
+
+    @Column(name = "ticket_code", length = 40, unique = true)
+    private String ticketCode;
+
+    @Column(name = "ticket_token", length = 120)
+    private String ticketToken;
+
+    @Column(name = "ticket_statut", length = 30)
+    private String ticketStatut;
+
+    @Column(name = "ticket_emis_le")
+    private LocalDateTime ticketEmisLe;
+
+    @Column(name = "ticket_utilise_le")
+    private LocalDateTime ticketUtiliseLe;
 }

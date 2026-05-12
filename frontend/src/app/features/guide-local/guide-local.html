@@ -10,24 +10,36 @@
 
   <div class="catalog-filters">
     @for (category of categories; track category) {
-    <button type="button">{{ category }}</button>
+    <button
+      type="button"
+      [class.is-active]="activeCategory() === category"
+      (click)="setCategory(category)"
+    >
+      {{ category }}
+    </button>
+    }
+  </div>
+
+  <div class="catalog-filters catalog-filters--compact">
+    @for (site of sites; track site.slug) {
+    <button
+      type="button"
+      [class.is-active]="activeSite() === site.slug"
+      (click)="setSite(site.slug)"
+    >
+      {{ site.name }}
+    </button>
     }
   </div>
 
   <section class="guide-grid">
-    @for (place of places; track place.name) {
-    <article class="guide-place-card">
-      <div class="guide-place-top">
-        <span class="guide-place-type">{{ place.type }}</span>
-        <span class="guide-place-tag">{{ place.tag }}</span>
-      </div>
-      <h3>{{ place.name }}</h3>
-      <p>{{ place.description }}</p>
-      <div class="guide-place-meta">
-        <span>{{ place.distance }}</span>
-        <span>{{ place.walk }} à pied</span>
-      </div>
-    </article>
+    <div class="guide-section-head">
+      <h2>{{ filteredPlaces().length }} adresse(s) utiles</h2>
+    </div>
+    @for (place of filteredPlaces(); track place.name) {
+    <app-guide-place-card [place]="place" />
+    } @empty {
+    <div class="empty-state">Aucune adresse pour ce filtre.</div>
     }
   </section>
 </div>

@@ -131,6 +131,21 @@
                 />
               </svg>
             </button>
+            @if (r.statut === 'VALIDEE') {
+            <a
+              class="action-btn action-btn--invoice"
+              title="Voir le Bagni Pass"
+              [routerLink]="['/reservations', r.id, 'ticket']"
+            >
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path
+                  d="M3 3h4v4H3zM9 3h4v4H9zM3 9h4v4H3zM9 9h1.5M13 9v4M9 13h1.5"
+                  stroke="currentColor"
+                  stroke-width="1.2"
+                />
+              </svg>
+            </a>
+            }
           </td>
         </tr>
         }
@@ -197,6 +212,11 @@
         <button class="btn btn--outline btn--sm" type="button" (click)="telechargerFacture(r)">
           Télécharger PDF
         </button>
+        @if (r.statut === 'VALIDEE') {
+        <a class="btn btn--primary btn--sm" [routerLink]="['/reservations', r.id, 'ticket']">
+          Bagni Pass
+        </a>
+        }
       </div>
     </div>
     }

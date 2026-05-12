@@ -12,6 +12,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
+import org.springframework.lang.NonNull;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -29,7 +30,7 @@ public class ClientController {
     @PreAuthorize("hasRole('CONCESSIONNAIRE')")
     public Page<ClientResponse> findAll(
             @RequestParam(required = false) Long paysId,
-            @PageableDefault(sort = "dateInscription", direction = Sort.Direction.DESC) Pageable pageable) {
+            @PageableDefault(sort = "dateInscription", direction = Sort.Direction.DESC) @NonNull Pageable pageable) {
         return clientService.findAll(paysId, pageable);
     }
 

@@ -12,8 +12,11 @@ import fr.bagni.backend.repository.UtilisateurRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -24,7 +27,7 @@ public class ClientService {
     private final PaysRepository paysRepository;
     private final UtilisateurRepository utilisateurRepository;
 
-    public Page<ClientResponse> findAll(Long paysId, Pageable pageable) {
+    public Page<ClientResponse> findAll(Long paysId, @NonNull Pageable pageable) {
         Page<Client> clients = paysId != null
                 ? clientRepository.findByPaysId(paysId, pageable)
                 : clientRepository.findAll(pageable);
@@ -32,7 +35,7 @@ public class ClientService {
     }
 
     public ClientResponse findById(Long id) {
-        return toResponse(getClientOrThrow(id));
+        return toResponse(getClientOrThrow(requireId(id, "clientId")));
     }
 
     public Client findByEmailOrThrow(String email) {
@@ -49,7 +52,8 @@ public class ClientService {
             throw new BusinessException("Cet email est déjà utilisé par un autre compte");
         }
 
-        var pays = paysRepository.findById(request.paysId())
+        var paysId = requireId(request.paysId(), "paysId");
+        var pays = paysRepository.findById(paysId)
                 .orElseThrow(() -> new ResourceNotFoundException("Pays introuvable"));
 
         client.setNom(request.nom());
@@ -57,23 +61,29 @@ public class ClientService {
         client.setEmail(request.email());
         client.setPays(pays);
 
-        return toResponse(clientRepository.save(client));
+        return toResponse(clientRepository.save(Objects.requireNonNull(client)));
     }
 
     @Transactional
     public void delete(Long id) {
-        if (!clientRepository.existsById(id)) {
+        var clientId = requireId(id, "clientId");
+        if (!clientRepository.existsById(clientId)) {
             throw new ResourceNotFoundException("Client introuvable");
         }
-        if (clientRepository.hasReservationsValidees(id)) {
+        if (clientRepository.hasReservationsValidees(clientId)) {
             throw new BusinessException("Impossible de supprimer un client ayant des réservations validées");
         }
-        clientRepository.deleteById(id);
+        clientRepository.deleteById(clientId);
     }
 
     private Client getClientOrThrow(Long id) {
-        return clientRepository.findById(id)
+        var clientId = requireId(id, "clientId");
+        return clientRepository.findById(clientId)
                 .orElseThrow(() -> new ResourceNotFoundException("Client introuvable"));
+    }
+
+    private @NonNull Long requireId(Long id, String label) {
+        return Objects.requireNonNull(id, label + " obligatoire");
     }
 
     public ClientResponse toResponse(Client client) {

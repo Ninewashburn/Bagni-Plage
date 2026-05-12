@@ -1,0 +1,59 @@
+<div class="page-container public-page">
+  <a routerLink="/reservations" class="back-link">Retour aux réservations</a>
+
+  @if (loading()) {
+  <section class="ticket-shell card">
+    <p>Chargement du Bagni Pass...</p>
+  </section>
+  } @else if (error()) {
+  <section class="ticket-shell card">
+    <h1>Bagni Pass indisponible</h1>
+    <p>{{ error() }}</p>
+  </section>
+  } @else { @if (ticket(); as t) {
+  <section class="ticket-shell card">
+    <div class="ticket-copy">
+      <span class="section-label">Bagni Pass</span>
+      <h1>Votre accès plage</h1>
+      <p>
+        Présentez ce code à votre arrivée. Le personnel peut le vérifier depuis l'espace de gestion.
+      </p>
+
+      <div class="ticket-meta-grid">
+        <article>
+          <span>Réservation</span>
+          <strong>#{{ t.reservationId }}</strong>
+        </article>
+        <article>
+          <span>Période</span>
+          <strong>{{ t.periode }}</strong>
+        </article>
+        <article>
+          <span>Parasols</span>
+          <strong>{{ t.parasols }}</strong>
+        </article>
+        <article>
+          <span>Mobilier</span>
+          <strong>{{ t.equipement }}</strong>
+        </article>
+      </div>
+    </div>
+
+    <aside class="ticket-card">
+      <span>Bagni Pass</span>
+      <div class="qr-card">
+        <div class="qr-code" aria-hidden="true">
+          @for (cell of qrCells(); track $index) {
+          <span [class.is-dark]="cell"></span>
+          }
+        </div>
+      </div>
+      <strong>{{ t.ticketCode || 'En attente' }}</strong>
+      <small>{{ statutLabel(t.statut) }}</small>
+      @if (t.emisLe) {
+      <small>Émis le {{ t.emisLe | date:'d MMMM yyyy, HH:mm':'':'fr' }}</small>
+      }
+    </aside>
+  </section>
+  } }
+</div>

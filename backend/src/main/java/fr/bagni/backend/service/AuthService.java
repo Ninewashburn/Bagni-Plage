@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -36,7 +37,8 @@ public class AuthService {
             throw new BusinessException("Un compte existe déjà avec cet email");
         }
 
-        var pays = paysRepository.findById(request.paysId())
+        var paysId = Objects.requireNonNull(request.paysId(), "Le pays est obligatoire");
+        var pays = paysRepository.findById(paysId)
                 .orElseThrow(() -> new ResourceNotFoundException("Pays introuvable"));
 
         var client = new Client();
@@ -48,7 +50,7 @@ public class AuthService {
         client.setPays(pays);
         client.setDateInscription(LocalDate.now());
 
-        utilisateurRepository.save(client);
+        utilisateurRepository.save(Objects.requireNonNull(client));
         return buildAuthResponse(client);
     }
 

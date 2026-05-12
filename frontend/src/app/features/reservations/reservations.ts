@@ -17,6 +17,7 @@ import { ReservationService } from '../../core/services/reservation.service';
 import { AuthService } from '../../core/services/auth.service';
 import { Reservation, Statut, ParasolInfo } from '../../core/models/reservation.model';
 import { AvatarComponent } from '../../shared/avatar';
+import { equipmentLabel, reservationStatusLabel } from '../../shared/reservation-labels';
 import { TagComponent } from '../../shared/tag';
 
 @Component({
@@ -185,7 +186,7 @@ export class ReservationsComponent implements OnInit {
   }
 
   statutLabel(statut: Statut): string {
-    return ({ EN_ATTENTE: 'En attente', VALIDEE: 'Validée', REFUSEE: 'Refusée' } as const)[statut];
+    return reservationStatusLabel(statut);
   }
 
   statutVariant(statut: Statut): 'pending' | 'accepted' | 'refused' {
@@ -197,17 +198,7 @@ export class ReservationsComponent implements OnInit {
   }
 
   equipementLabel(eq: string): string {
-    return (
-      (
-        {
-          UN_LIT: '1 lit',
-          DEUX_LITS: '2 lits',
-          UN_FAUTEUIL: '1 fauteuil',
-          FAUTEUIL_ET_LIT: 'Fauteuil + lit',
-          DEUX_FAUTEUILS: '2 fauteuils',
-        } as Record<string, string>
-      )[eq] ?? eq
-    );
+    return equipmentLabel(eq);
   }
 
   clientInitials(r: Reservation): string {
